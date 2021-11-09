@@ -35,12 +35,12 @@ Once this has been set and source (```source ~/.bashrc```) we can test the insta
 The PyNGL demos require a number of python packages to be installed, this can be done using pip3.
 
 |Package  |  Version|
------------------
-glfw  |     2.3.0
-numpy |     1.21.4
-pip   |     21.2.3
-PyOpenGL |  3.1.5
-PyQt6  |    6.2.1
-PySDL2   |  0.9.9
+|--------|--------|
+| glfw  |     2.3.0|
+|numpy |     1.21.4|
+|pip   |     21.2.3|
+|PyOpenGL |  3.1.5|
+|PyQt6  |    6.2.1|
+|PySDL2   |  0.9.9|
 
 ``` pip3 install PyOpenGL PySDL2 PyQt6 glfw numpy```
