@@ -24,7 +24,7 @@ class MainWindow(QOpenGLWindow) :
     self.mouseGlobalTX=Mat4()
     self.width=int(1024)
     self.height=int(720)
-    self.setTitle('pyNGL demo')
+    self.setTitle('Simple FBO Demo')
     self.spinXFace = int(0)
     self.spinYFace = int(0)
     self.rotate = False
@@ -38,6 +38,10 @@ class MainWindow(QOpenGLWindow) :
     self.modelPos=Vec3()
     self.lightPos=Vec4()
     self.transformLight=False
+    self.textureWidth=1024
+    self.textureHeight=1024
+    self.rot=0.0
+    self.transform=Transformation()
 
   def initializeGL(self) :
     self.makeCurrent()
@@ -68,22 +72,19 @@ class MainWindow(QOpenGLWindow) :
     ShaderLib.setUniform('metallic',1.02) 
     ShaderLib.setUniform('roughness',0.38) 
     ShaderLib.setUniform('ao',0.2) 
-    VAOPrimitives.createTrianglePlane('floor',20,20,1,1,Vec3.up()) 
-    ShaderLib.printRegisteredUniforms('PBR')
-    ShaderLib.use(nglCheckerShader) 
-    ShaderLib.setUniform('lightDiffuse',1.0,1.0,1.0,1.0) 
-    ShaderLib.setUniform('checkOn',1) 
-    ShaderLib.setUniform('lightPos',self.lightPos.toVec3()) 
-    ShaderLib.setUniform('colour1',0.9,0.9,0.9,1.0) 
-    ShaderLib.setUniform('colour2',0.6,0.6,0.6,1.0) 
-    ShaderLib.setUniform('checkSize',60.0) 
-    ShaderLib.printRegisteredUniforms(nglCheckerShader)
+    ShaderLib.loadShader('TextureShader','../shaders/TextureVertex.glsl','../shaders/TextureFragment.glsl',ErrorExit.OFF)
+    self.createTextureObject()
+    self.createFramebufferObject()
+    VAOPrimitives.createTrianglePlane('plane',2,2,20,20,Vec3(0,1,0))
+    VAOPrimitives.createSphere('sphere',0.4,80);
+    self.startTimer(1)
+
    
 
   def loadMatricesToShader(self) :
     ShaderLib.use('PBR')
-    M=self.view*self.mouseGlobalTX
-    MVP=self.projection*M
+    M=self.transform.getMatrix()
+    MVP=self.projection*self.view*M
     normalMatrix=M
     normalMatrix.inverse().transpose() 
     ShaderLib.setUniform('M',M)
@@ -95,9 +96,32 @@ class MainWindow(QOpenGLWindow) :
   def paintGL(self):
     try :
       self.makeCurrent()
-      glViewport( 0, 0, self.width, self.height )
-      glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT )
-      ShaderLib.use('PBR')
+      # we are now going to draw to our FBO
+      # set the rendering destination to FBO
+      glBindFramebuffer(GL_FRAMEBUFFER, self.fboID)
+      # set the background colour (using blue to show it up)
+      glClearColor(0,0.4,0.5,1)
+      glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
+      # set our viewport to the size of the texture
+      # if we want a different camera we wouldset this here
+      glViewport(0, 0, self.textureWidth, self.textureHeight)
+      # rotate the teapot
+      self.transform.reset()
+      self.transform.setRotation(self.rot,self.rot,self.rot)
+      self.loadMatricesToShader()
+      VAOPrimitives.draw("teapot")
+
+      # Now draw into default framebuffer
+      # first bind the normal render buffer
+      glBindFramebuffer(GL_FRAMEBUFFER, self.defaultFramebufferObject())
+      # now enable the texture we just rendered to
+      glBindTexture(GL_TEXTURE_2D, self.textureID)
+      # do any mipmap generation
+      # glGenerateMipmap(GL_TEXTURE_2D);
+      # set the screen for a different clear colour
+      glClearColor(0.4, 0.4, 0.4, 1.0)			   # Grey Background
+      # clear this screen
+      glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
       rotX=Mat4() 
       rotY=Mat4() 
       rotX.rotateX( self.spinXFace ) 
@@ -106,18 +130,47 @@ class MainWindow(QOpenGLWindow) :
       self.mouseGlobalTX.m_30  = self.modelPos.m_x 
       self.mouseGlobalTX.m_31  = self.modelPos.m_y 
       self.mouseGlobalTX.m_32  = self.modelPos.m_z 
-      self.loadMatricesToShader()
-      VAOPrimitives.draw('teapot')
+
+      # get the new shader and set the new viewport size
+      ShaderLib.use('TextureShader')
+      # this takes into account retina displays etc
+      glViewport(0, 0, self.width,self.height)
+      self.transform.reset()
+      MVP= self.projection*self.view*self.mouseGlobalTX
+      ShaderLib.setUniform("MVP",MVP)
+      VAOPrimitives.draw("plane")
+      self.transform.setPosition(0,1,0)
+      MVP= self.projection*self.view*self.mouseGlobalTX*self.transform.getMatrix()
+      ShaderLib.setUniform("MVP",MVP)
+      VAOPrimitives.draw("sphere")
+
+
       
-      ShaderLib.use(nglCheckerShader)
-      tx=Mat4()
-      tx.translate(0.0,-0.45,0.0)
-      MVP=self.projection*self.view*self.mouseGlobalTX*tx
-      normalMatrix=Mat3(self.view*self.mouseGlobalTX)
-      normalMatrix.inverse().transpose()
-      ShaderLib.setUniform('MVP',MVP)
-      ShaderLib.setUniform('normalMatrix',normalMatrix)
-      VAOPrimitives.draw('floor')
+      
+      
+      # glViewport( 0, 0, self.width, self.height )
+      # glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT )
+      # ShaderLib.use('PBR')
+      # rotX=Mat4() 
+      # rotY=Mat4() 
+      # rotX.rotateX( self.spinXFace ) 
+      # rotY.rotateY( self.spinYFace ) 
+      # self.mouseGlobalTX = rotY * rotX 
+      # self.mouseGlobalTX.m_30  = self.modelPos.m_x 
+      # self.mouseGlobalTX.m_31  = self.modelPos.m_y 
+      # self.mouseGlobalTX.m_32  = self.modelPos.m_z 
+      # self.loadMatricesToShader()
+      # VAOPrimitives.draw('teapot')
+      
+      # ShaderLib.use(nglCheckerShader)
+      # tx=Mat4()
+      # tx.translate(0.0,-0.45,0.0)
+      # MVP=self.projection*self.view*self.mouseGlobalTX*tx
+      # normalMatrix=Mat3(self.view*self.mouseGlobalTX)
+      # normalMatrix.inverse().transpose()
+      # ShaderLib.setUniform('MVP',MVP)
+      # ShaderLib.setUniform('normalMatrix',normalMatrix)
+      # VAOPrimitives.draw('floor')
 
     except OpenGL.error.GLError :
       print( 'error')
@@ -128,7 +181,47 @@ class MainWindow(QOpenGLWindow) :
     self.projection=perspective( 45.0, float( self.width)  / self.height, 0.1, 200.0 )
  
 
-  
+  def createTextureObject(self) :
+    # create a texture object
+    self.textureID=glGenTextures(1)
+    # bind it to make it active
+    glActiveTexture(GL_TEXTURE0)
+    glBindTexture(GL_TEXTURE_2D, self.textureID)
+    # set params
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
+    #//glGenerateMipmapEXT(GL_TEXTURE_2D);  // set the data size but just set the buffer to 0 as we will fill it with the FBO
+           
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, self.textureWidth, self.textureHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, None)
+    # now turn the texture off for now
+    glBindTexture(GL_TEXTURE_2D, 0)
+
+  def createFramebufferObject(self) :
+    # create a framebuffer object this is deleted in the dtor
+    self.fboID=glGenFramebuffers(1)
+    glBindFramebuffer(GL_FRAMEBUFFER, self.fboID)
+    # create a renderbuffer object to store depth info
+    rboID=glGenRenderbuffers(1)
+    glBindRenderbuffer(GL_RENDERBUFFER, rboID)
+
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, self.textureWidth, self.textureHeight)
+    # bind
+    glBindRenderbuffer(GL_RENDERBUFFER, 0)
+
+    # attatch the texture we created earlier to the FBO
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, self.textureID, 0)
+
+    # now attach a renderbuffer to depth attachment point
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rboID)
+    # now got back to the default render context
+    glBindFramebuffer(GL_FRAMEBUFFER, 0)
+    # were finished as we have an attached RB so delete it
+    glDeleteRenderbuffers(1,rboID)
+
+  def timerEvent(self,event) :
+    self.rot=self.rot+0.1
+    self.update()
+
 
   if PyQtVersion == 5 :
     def keyPressEvent(self, event) :

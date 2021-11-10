@@ -35,7 +35,7 @@ class MainWindow(QMainWindow) :
     self.scaleY.valueChanged.connect( lambda : glWidget.setScale(self.scaleY,'y'))
     self.scaleZ.valueChanged.connect( lambda : glWidget.setScale(self.scaleZ,'z'))
 
-    self.positionX.valueChanged.connect( lambda : glWidget.setPosition(self.positionX,'x'))
+    self.positionX.value_hanged.connect( lambda : glWidget.setPosition(self.positionX,'x'))
     self.positionY.valueChanged.connect( lambda : glWidget.setPosition(self.positionY,'y'))
     self.positionZ.valueChanged.connect( lambda : glWidget.setPosition(self.positionZ,'z'))
     self.colour.clicked.connect(glWidget.setColour)
@@ -55,7 +55,6 @@ class MainWindow(QMainWindow) :
         if key==Qt.Key.Key_Escape :
           exit()
         self.update()
-
 
 if __name__ == '__main__':
   app = QApplication(sys.argv)
