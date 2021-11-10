@@ -23,22 +23,22 @@ class MainWindow(QMainWindow) :
     super(QMainWindow, self).__init__(parent)
     uic.loadUi('MainWindow.ui', self) # Load the .ui file
     glWidget=NGLScene(self)
-    self.s_mainWindowGridLayout.addWidget(glWidget,0,0,2,1)
-    self.m_wireframe.clicked.connect(glWidget.toggleWireframe)
-    self.m_objectSelection.currentTextChanged.connect(glWidget.setModel)
+    self.mainWindowGridLayout.addWidget(glWidget,0,0,2,1)
+    self.wireframe.clicked.connect(glWidget.toggleWireframe)
+    self.objectSelection.currentTextChanged.connect(glWidget.setModel)
     # it's simple to do a 1-1 mapping of methods
-    self.m_rotationX.valueChanged.connect(glWidget.setRotationX)
-    self.m_rotationY.valueChanged.connect(glWidget.setRotationY)
-    self.m_rotationZ.valueChanged.connect(glWidget.setRotationZ)
+    self.rotationX.valueChanged.connect(glWidget.setRotationX)
+    self.rotationY.valueChanged.connect(glWidget.setRotationY)
+    self.rotationZ.valueChanged.connect(glWidget.setRotationZ)
     # however we can use a lambda to add decoration to the function
-    self.m_scaleX.valueChanged.connect( lambda : glWidget.setScale(self.m_scaleX,'x'))
-    self.m_scaleY.valueChanged.connect( lambda : glWidget.setScale(self.m_scaleY,'y'))
-    self.m_scaleZ.valueChanged.connect( lambda : glWidget.setScale(self.m_scaleZ,'z'))
+    self.scaleX.valueChanged.connect( lambda : glWidget.setScale(self.scaleX,'x'))
+    self.scaleY.valueChanged.connect( lambda : glWidget.setScale(self.scaleY,'y'))
+    self.scaleZ.valueChanged.connect( lambda : glWidget.setScale(self.scaleZ,'z'))
 
-    self.m_positionX.valueChanged.connect( lambda : glWidget.setPosition(self.m_positionX,'x'))
-    self.m_positionY.valueChanged.connect( lambda : glWidget.setPosition(self.m_positionY,'y'))
-    self.m_positionZ.valueChanged.connect( lambda : glWidget.setPosition(self.m_positionZ,'z'))
-    self.m_colour.clicked.connect(glWidget.setColour)
+    self.positionX.valueChanged.connect( lambda : glWidget.setPosition(self.positionX,'x'))
+    self.positionY.valueChanged.connect( lambda : glWidget.setPosition(self.positionY,'y'))
+    self.positionZ.valueChanged.connect( lambda : glWidget.setPosition(self.positionZ,'z'))
+    self.colour.clicked.connect(glWidget.setColour)
 
   if PyQtVersion == 5 :
     def keyPressEvent(self, event) :

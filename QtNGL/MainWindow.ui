@@ -14,9 +14,9 @@
    <string>pyngl Qt Demo Using ui</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <layout class="QGridLayout" name="s_mainWindowGridLayout">
+   <layout class="QGridLayout" name="mainWindowGridLayout">
     <item row="0" column="1">
-     <widget class="QGroupBox" name="s_transformGB">
+     <widget class="QGroupBox" name="transformGB">
       <property name="title">
        <string>Transform</string>
       </property>
@@ -29,7 +29,7 @@
         </widget>
        </item>
        <item row="1" column="0">
-        <widget class="QDoubleSpinBox" name="m_rotationX">
+        <widget class="QDoubleSpinBox" name="rotationX">
          <property name="minimum">
           <double>-360.000000000000000</double>
          </property>
@@ -39,7 +39,7 @@
         </widget>
        </item>
        <item row="1" column="1">
-        <widget class="QDoubleSpinBox" name="m_rotationY">
+        <widget class="QDoubleSpinBox" name="rotationY">
          <property name="minimum">
           <double>-360.000000000000000</double>
          </property>
@@ -49,7 +49,7 @@
         </widget>
        </item>
        <item row="1" column="2">
-        <widget class="QDoubleSpinBox" name="m_rotationZ">
+        <widget class="QDoubleSpinBox" name="rotationZ">
          <property name="minimum">
           <double>-360.000000000000000</double>
          </property>
@@ -66,7 +66,7 @@
         </widget>
        </item>
        <item row="3" column="0">
-        <widget class="QDoubleSpinBox" name="m_scaleX">
+        <widget class="QDoubleSpinBox" name="scaleX">
          <property name="minimum">
           <double>-4.000000000000000</double>
          </property>
@@ -82,7 +82,7 @@
         </widget>
        </item>
        <item row="3" column="1">
-        <widget class="QDoubleSpinBox" name="m_scaleY">
+        <widget class="QDoubleSpinBox" name="scaleY">
          <property name="minimum">
           <double>-4.000000000000000</double>
          </property>
@@ -98,7 +98,7 @@
         </widget>
        </item>
        <item row="3" column="2">
-        <widget class="QDoubleSpinBox" name="m_scaleZ">
+        <widget class="QDoubleSpinBox" name="scaleZ">
          <property name="minimum">
           <double>-4.000000000000000</double>
          </property>
@@ -121,7 +121,7 @@
         </widget>
        </item>
        <item row="5" column="0">
-        <widget class="QDoubleSpinBox" name="m_positionX">
+        <widget class="QDoubleSpinBox" name="positionX">
          <property name="minimum">
           <double>-20.000000000000000</double>
          </property>
@@ -134,7 +134,7 @@
         </widget>
        </item>
        <item row="5" column="1">
-        <widget class="QDoubleSpinBox" name="m_positionY">
+        <widget class="QDoubleSpinBox" name="positionY">
          <property name="minimum">
           <double>-20.000000000000000</double>
          </property>
@@ -147,7 +147,7 @@
         </widget>
        </item>
        <item row="5" column="2">
-        <widget class="QDoubleSpinBox" name="m_positionZ">
+        <widget class="QDoubleSpinBox" name="positionZ">
          <property name="minimum">
           <double>-20.000000000000000</double>
          </property>
@@ -163,13 +163,13 @@
      </widget>
     </item>
     <item row="1" column="1">
-     <widget class="QGroupBox" name="s_drawGB">
+     <widget class="QGroupBox" name="drawGB">
       <property name="title">
        <string>Draw</string>
       </property>
       <layout class="QGridLayout" name="gridLayout_2">
        <item row="0" column="0">
-        <widget class="QComboBox" name="m_objectSelection">
+        <widget class="QComboBox" name="objectSelection">
          <item>
           <property name="text">
            <string>teapot</string>
@@ -188,14 +188,14 @@
         </widget>
        </item>
        <item row="1" column="0">
-        <widget class="QCheckBox" name="m_wireframe">
+        <widget class="QCheckBox" name="wireframe">
          <property name="text">
           <string>WireFrame</string>
          </property>
         </widget>
        </item>
        <item row="3" column="0">
-        <widget class="QPushButton" name="m_colour">
+        <widget class="QPushButton" name="colour">
          <property name="text">
           <string>Choose Colour</string>
          </property>
