@@ -42,5 +42,6 @@ The PyNGL demos require a number of python packages to be installed, this can be
 |PyOpenGL |  3.1.5|
 |PyQt6  |    6.2.1|
 |PySDL2   |  0.9.9|
+|pysdl2-dll | 2.0.16 |
 
-``` pip3 install PyOpenGL PySDL2 PyQt6 glfw numpy```
+``` pip3 install PyOpenGL PySDL2 pysdl2-dll PyQt6 glfw numpy pybullet```

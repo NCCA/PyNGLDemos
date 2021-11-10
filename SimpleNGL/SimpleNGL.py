@@ -2,7 +2,7 @@
 try : # support either PyQt5 or 6
   from PyQt5.QtGui import QOpenGLWindow,QSurfaceFormat
   from PyQt5.QtWidgets import QApplication
-  from  PyQt5.QtCore import *
+  from PyQt5.QtCore import *
   PyQtVersion = 5
 except ImportError:
   print('trying Qt6')
@@ -17,7 +17,7 @@ from pyngl import *
 from OpenGL.GL import *
     
 
-class MainWindow(QOpenGLWindow) :
+class MainWindow(QMainWindow) :
   
   def __init__(self, parent=None):
     super(QOpenGLWindow, self).__init__(parent)
