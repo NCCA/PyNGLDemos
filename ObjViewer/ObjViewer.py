@@ -15,7 +15,8 @@ except ImportError:
 import sys
 from pyngl import *
 from OpenGL.GL import *
-    
+import argparse
+  
 
 class MainWindow(QOpenGLWindow) :
   
@@ -264,6 +265,22 @@ class MainWindow(QOpenGLWindow) :
 
 
 if __name__ == '__main__':
+
+
+  parser = argparse.ArgumentParser(description='Mesh and Texture options')
+  parser.add_argument('--obj', '-o', nargs='?', const='', default='', type=str,help='Obj mesh to load')
+  parser.add_argument('--tex', '-t', nargs='?',const='', default='', type=str,help='texture to load')
+
+  args = parser.parse_args()
+  if args.obj :
+    oname = args.obj 
+  else :
+    oname='Helix.obj'
+  if args.tex :
+    tname = args.tex 
+  else :
+      tname='RatGrid.png'
+
   app = QApplication(sys.argv)
   format=QSurfaceFormat()
   format.setSamples(4) 
@@ -280,7 +297,7 @@ if __name__ == '__main__':
   # set that as the default format for all windows
   QSurfaceFormat.setDefaultFormat(format) 
 
-  window = MainWindow("Helix.obj","helix_base.tif")
+  window = MainWindow(oname,tname)
   window.setFormat(format)
   window.resize(1024,720)
   window.show()
