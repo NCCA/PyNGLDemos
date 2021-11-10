@@ -61,7 +61,6 @@ class GLFWWindow :
     self.scene.mouseMoveEvent(self.ActiveButton,x,y)
 
   def scroll_callback(self, window, x,y) :
-    x,y=glfw.get_cursor_pos(window)
     self.scene.wheelEvent(x,y)
 
 
