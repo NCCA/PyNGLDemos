@@ -53,33 +53,32 @@ class MainWindow(QOpenGLWindow) :
 
 
   def buildVAO(self) :
-    verts=VectorVec3([
-    Vec3(0.0,1.0,1.0),
-    Vec3(0.0,0.0,-1.0),
-    Vec3(-0.5,0.0,1.0),
-    Vec3(0.0,1.0,1.0),
-    Vec3(0.0,0.0,-1.0),
-    Vec3(0.5,0.0,1.0),
-    Vec3(0.0,1.0,1.0),
-    Vec3(0.0,0.0,1.5),
-    Vec3(-0.5,0.0,1.0),
-    Vec3(0.0,1.0,1.0),
-    Vec3(0.0,0.0,1.5),
-    Vec3(0.5,0.0,1.0)])
+    verts=VectorVec3()
+    verts.push_back(Vec3(0.0,1.0,1.0))
+    verts.push_back(Vec3(0.0,0.0,-1.0))
+    verts.push_back(Vec3(-0.5,0.0,1.0))
+    verts.push_back(Vec3(0.0,1.0,1.0))
+    verts.push_back(Vec3(0.0,0.0,-1.0))
+    verts.push_back(Vec3(0.5,0.0,1.0))
+    verts.push_back(Vec3(0.0,1.0,1.0))
+    verts.push_back(Vec3(0.0,0.0,1.5))
+    verts.push_back(Vec3(-0.5,0.0,1.0))
+    verts.push_back(Vec3(0.0,1.0,1.0))
+    verts.push_back(Vec3(0.0,0.0,1.5))
+    verts.push_back(Vec3(0.5,0.0,1.0))
  
     print("creating VAO")
     self.vao=VAOFactory.createVAO(simpleVAO,GL_TRIANGLES)
     self.vao.bind()
     print("VAO Bind")
     print (len(verts)*Vec3.sizeof())
-    self.vao.setData(len(verts)*Vec3.sizeof(),verts)
+    self.vao.setData(VertexData(len(verts)*Vec3.sizeof(),verts))
     print("VAO Set Data")
     self.vao.setVertexAttributePointer(0,3,GL_FLOAT,0,0)
     print("VAO Set Pointer")
 
     self.vao.setNumIndices(len(verts))
     print("VAO set induces",len(verts))
- 
     self.vao.unbind() 
 
 

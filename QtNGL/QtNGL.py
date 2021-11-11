@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 try : # support either PyQt5 or 6
-  from PyQt5.QtGui import QMainWindow,QSurfaceFormat
-  from PyQt5.QtWidgets import QApplication
+  from PyQt5.QtGui import QSurfaceFormat
+  from PyQt5.QtWidgets import QApplication,QMainWindow
   from PyQt5.QtCore import *
   from PyQt5 import uic
   PyQtVersion = 5
@@ -35,7 +35,7 @@ class MainWindow(QMainWindow) :
     self.scaleY.valueChanged.connect( lambda : glWidget.setScale(self.scaleY,'y'))
     self.scaleZ.valueChanged.connect( lambda : glWidget.setScale(self.scaleZ,'z'))
 
-    self.positionX.value_hanged.connect( lambda : glWidget.setPosition(self.positionX,'x'))
+    self.positionX.valueChanged.connect( lambda : glWidget.setPosition(self.positionX,'x'))
     self.positionY.valueChanged.connect( lambda : glWidget.setPosition(self.positionY,'y'))
     self.positionZ.valueChanged.connect( lambda : glWidget.setPosition(self.positionZ,'z'))
     self.colour.clicked.connect(glWidget.setColour)

@@ -1,14 +1,13 @@
 try : # support either PyQt5 or 6
-  from PyQt5.QtGui import QMainWindow,QSurfaceFormat
-  from PyQt5.QtWidgets import QApplication,QOpenGLWidget,QColourDialog
+  from PyQt5.QtGui import QSurfaceFormat
+  from PyQt5.QtWidgets import QApplication,QMainWindow,QOpenGLWidget,QColorDialog
   from PyQt5.QtCore import *
   from PyQt5 import uic
   PyQtVersion = 5
 except ImportError:
   print('trying Qt6')
   from PyQt6.QtGui import QSurfaceFormat
-  from PyQt6.QtWidgets import QApplication,QMainWindow,QColorDialog
-  from PyQt6.QtOpenGLWidgets import QOpenGLWidget
+  from PyQt6.QtWidgets import QApplication,QMainWindow
   from PyQt6.QtCore import QEvent,Qt
   from PyQt6 import uic
   PyQtVersion = 6

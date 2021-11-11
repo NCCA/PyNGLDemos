@@ -279,7 +279,7 @@ if __name__ == '__main__':
   if args.tex :
     tname = args.tex 
   else :
-      tname='RatGrid.png'
+      tname='helix_base.tif'
 
   app = QApplication(sys.argv)
   format=QSurfaceFormat()
