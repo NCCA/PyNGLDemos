@@ -37,7 +37,7 @@ class MainWindow(QMainWindow):
         self.scaleY.valueChanged.connect(lambda: glWidget.setScale(self.scaleY, "y"))
         self.scaleZ.valueChanged.connect(lambda: glWidget.setScale(self.scaleZ, "z"))
 
-        self.positionX.value_hanged.connect(
+        self.positionX.valueChanged.connect(
             lambda: glWidget.setPosition(self.positionX, "x")
         )
         self.positionY.valueChanged.connect(
