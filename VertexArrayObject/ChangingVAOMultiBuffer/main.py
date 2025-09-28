@@ -101,8 +101,8 @@ class MainWindow(PySideEventHandlingMixin, QOpenGLWindow):
             self.vao.set_data(colour_data, 1)  # index 1 for Color buffer
             self.vao.set_vertex_attribute_pointer(1, 4, gl.GL_FLOAT, 0, 0)
         # # Set up text rendering for displaying data size
-        self.text = Text("../fonts/Arial.ttf", 18)
-        self.text.set_screen_size(self.window_width, self.window_height)
+        Text.add_font("Arial", "../fonts/Arial.ttf", 48)
+        Text.set_screen_size(self.window_width, self.window_height)
 
         # Start a timer to update the vertex data periodically
         self.startTimer(220.0)
@@ -145,8 +145,9 @@ class MainWindow(PySideEventHandlingMixin, QOpenGLWindow):
             self.vao.draw()
 
         # Render text showing the current data size
-        self.text.set_colour(1, 1, 1)
-        self.text.render_text(10, 18, f"Data Size {(len(self.data) / 2)}")
+        Text.render_text(
+            "Arial", 10, 28, f"Data Size {(len(self.data) // 2)}", Vec3(1, 0, 1)
+        )
 
     def resizeGL(self, w: int, h: int) -> None:
         """
@@ -159,7 +160,7 @@ class MainWindow(PySideEventHandlingMixin, QOpenGLWindow):
         self.window_width = int(w * self.devicePixelRatio())
         self.window_height = int(h * self.devicePixelRatio())
         self.project = perspective(45.0, float(w) / h, 0.01, 350.0)
-        self.text.set_screen_size(self.window_width, self.window_height)
+        Text.set_screen_size(self.window_width, self.window_height)
 
     def keyPressEvent(self, event) -> None:
         """

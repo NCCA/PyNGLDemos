@@ -44,7 +44,7 @@ class MainWindow(PySideEventHandlingMixin, QOpenGLWindow):
         # --- Window and UI Attributes ---
         self.window_width: int = 1024  # Window width¦
         self.window_height: int = 720  # Window height
-        self.setTitle("Blank PySide6 py-ngl")
+        self.setTitle("Blank PySide6 py-ngl Using a Mixin")
 
     def initializeGL(self) -> None:
         """

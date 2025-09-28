@@ -124,8 +124,8 @@ class MainWindow(PySideEventHandlingMixin, QOpenGLWindow):
 
         # Render text showing the current data size
         # self.text.render_text(10, 18, f"Data Size {(len(self.data) / 2)}")
-        Text.render_dynamic_text(
-            "Arial", 10, 48, f"Data Size {(len(self.data) / 2)}", Vec3(1, 1, 1)
+        Text.render_text(
+            "Arial", 10, 48, f"Data Size {(len(self.data) // 2)}", Vec3(1.0, 1.0, 0.0)
         )
 
     def resizeGL(self, w: int, h: int) -> None:
@@ -139,7 +139,7 @@ class MainWindow(PySideEventHandlingMixin, QOpenGLWindow):
         self.window_width = int(w * self.devicePixelRatio())
         self.window_height = int(h * self.devicePixelRatio())
         self.project = perspective(45.0, float(w) / h, 0.01, 350.0)
-        Text.set_screen_size(self.window_width, self.window_height)
+        Text.set_screen_size(w=self.window_width, h=self.window_height)
 
     def timerEvent(self, event) -> None:
         """
