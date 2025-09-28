@@ -127,7 +127,6 @@ class DemoRunner(QMainWindow):
     def _load_readme(self, path):
         try:
             readme_path = Path(path) / "README.md"
-            print(readme_path.read_text())
             self.demo_text.setMarkdown(readme_path.read_text())
         except FileNotFoundError:
             print("README.md not found")

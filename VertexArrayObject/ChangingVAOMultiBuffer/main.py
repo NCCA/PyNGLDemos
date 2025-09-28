@@ -146,7 +146,7 @@ class MainWindow(PySideEventHandlingMixin, QOpenGLWindow):
 
         # Render text showing the current data size
         Text.render_text(
-            "Arial", 10, 28, f"Data Size {(len(self.data) // 2)}", Vec3(1, 0, 1)
+            "Arial", 10, 48, f"Data Size {(len(self.data) // 2)}", Vec3(1, 1, 0)
         )
 
     def resizeGL(self, w: int, h: int) -> None:

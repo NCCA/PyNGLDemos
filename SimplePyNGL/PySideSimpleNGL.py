@@ -57,7 +57,7 @@ class MainWindow(QOpenGLWindow):
         # --- Window and UI Attributes ---
         self.window_width: int = 1024  # Window width
         self.window_height: int = 720  # Window height
-        self.setTitle("Blank PySide6 py-ngl")
+        self.setTitle("SimplePyNGL")
 
         # --- Mouse Control Attributes for Camera Manipulation ---
         self.rotate: bool = False  # Flag to check if the scene is being rotated

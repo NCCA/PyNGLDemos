@@ -92,9 +92,9 @@ class Scene:
         if event.type == sdl3.SDL_EVENT_KEY_DOWN:
             if event.key.key == sdl3.SDLK_ESCAPE:
                 return False
-            elif event.key.key == sdl3.SDLK_w:
+            elif event.key.key == sdl3.SDLK_W:
                 gl.glPolygonMode(gl.GL_FRONT_AND_BACK, gl.GL_LINE)
-            elif event.key.key == sdl3.SDLK_s:
+            elif event.key.key == sdl3.SDLK_S:
                 gl.glPolygonMode(gl.GL_FRONT_AND_BACK, gl.GL_FILL)
             elif event.key.key == sdl3.SDLK_SPACE:
                 self.spinXFace = 0
