@@ -2,7 +2,7 @@ import json
 import os
 
 import OpenGL.GL as gl
-from ngl import Texture
+from pyngl import Texture
 
 
 class _Texture:

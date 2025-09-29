@@ -11,7 +11,7 @@ import sys
 import traceback
 
 import OpenGL.GL as gl
-from ngl import (
+from pyngl import (
     Mat3,
     Mat4,
     Primitives,

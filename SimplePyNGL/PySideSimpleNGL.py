@@ -12,7 +12,7 @@ import traceback
 
 import numpy as np
 import OpenGL.GL as gl
-from ngl import (
+from pyngl import (
     DefaultShader,
     Mat3,
     Mat4,

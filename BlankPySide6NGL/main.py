@@ -11,7 +11,7 @@ import sys
 import traceback
 
 import OpenGL.GL as gl
-from ngl import Mat4, Vec3, logger, look_at, perspective
+from pyngl import Mat4, Vec3, logger, look_at, perspective
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QSurfaceFormat
 from PySide6.QtOpenGL import QOpenGLWindow

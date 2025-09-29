@@ -10,7 +10,7 @@ import math
 import sys
 
 import OpenGL.GL as gl
-from ngl import (
+from pyngl import (
     Mat4,
     PySideEventHandlingMixin,
     ShaderLib,

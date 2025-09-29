@@ -14,7 +14,7 @@ from typing import List
 
 import numpy as np
 import OpenGL.GL as gl
-from ngl import (
+from pyngl import (
     DefaultShader,
     Mat3,
     Mat4,
@@ -60,9 +60,13 @@ class MainWindow(QOpenGLWindow):
         """
         super().__init__(parent)
         # --- Camera and Transformation Attributes ---
-        self.mouse_global_tx: Mat4 = Mat4()  # Global transformation matrix controlled by the mouse
+        self.mouse_global_tx: Mat4 = (
+            Mat4()
+        )  # Global transformation matrix controlled by the mouse
         self.view: Mat4 = Mat4()  # View matrix (camera's position and orientation)
-        self.project: Mat4 = Mat4()  # Projection matrix (defines the camera's viewing frustum)
+        self.project: Mat4 = (
+            Mat4()
+        )  # Projection matrix (defines the camera's viewing frustum)
         self.model_position: Vec3 = Vec3()  # Position of the model in world space
 
         # --- Window and UI Attributes ---
@@ -72,13 +76,23 @@ class MainWindow(QOpenGLWindow):
 
         # --- Mouse Control Attributes for Camera Manipulation ---
         self.rotate: bool = False  # Flag to check if the scene is being rotated
-        self.translate: bool = False  # Flag to check if the scene is being translated (panned)
+        self.translate: bool = (
+            False  # Flag to check if the scene is being translated (panned)
+        )
         self.spin_x_face: int = 0  # Accumulated rotation around the X-axis
         self.spin_y_face: int = 0  # Accumulated rotation around the Y-axis
-        self.original_x_rotation: int = 0  # Initial X position of the mouse when a rotation starts
-        self.original_y_rotation: int = 0  # Initial Y position of the mouse when a rotation starts
-        self.original_x_pos: int = 0  # Initial X position of the mouse when a translation starts
-        self.original_y_pos: int = 0  # Initial Y position of the mouse when a translation starts
+        self.original_x_rotation: int = (
+            0  # Initial X position of the mouse when a rotation starts
+        )
+        self.original_y_rotation: int = (
+            0  # Initial Y position of the mouse when a rotation starts
+        )
+        self.original_x_pos: int = (
+            0  # Initial X position of the mouse when a translation starts
+        )
+        self.original_y_pos: int = (
+            0  # Initial Y position of the mouse when a translation starts
+        )
         self.INCREMENT: float = 0.01  # Sensitivity for translation
         self.ZOOM: float = 0.1  # Sensitivity for zooming
         self.transform = Transform()
@@ -204,13 +218,19 @@ class MainWindow(QOpenGLWindow):
         if self.show_lights:
             self.transform.reset()
             for light in self.light_array:
-                self.transform.set_position(light.position.x, light.position.y, light.position.z)
+                self.transform.set_position(
+                    light.position.x, light.position.y, light.position.z
+                )
                 self.load_matrices_to_colour_shader(light.colour)
                 Primitives.draw("cube")
 
         self.transform.reset()
-        self.transform.set_scale(self.teapot_scale, self.teapot_scale, self.teapot_scale)
-        self.transform.set_rotation(self.teapot_rotation, self.teapot_rotation, self.teapot_rotation)
+        self.transform.set_scale(
+            self.teapot_scale, self.teapot_scale, self.teapot_scale
+        )
+        self.transform.set_rotation(
+            self.teapot_rotation, self.teapot_rotation, self.teapot_rotation
+        )
         self.load_matrices_to_shader()
         Primitives.draw("teapot")
 
@@ -222,7 +242,12 @@ class MainWindow(QOpenGLWindow):
             colour: The color of the light.
         """
         ShaderLib.use(DefaultShader.COLOUR)
-        MVP = self.project @ self.view @ self.mouse_global_tx @ self.transform.get_matrix()
+        MVP = (
+            self.project
+            @ self.view
+            @ self.mouse_global_tx
+            @ self.transform.get_matrix()
+        )
         ShaderLib.set_uniform("MVP", MVP)
         c = colour / 200.0
         ShaderLib.set_uniform("Colour", c.x, c.y, c.z, 1.0)
@@ -285,9 +310,13 @@ class MainWindow(QOpenGLWindow):
         if key == Qt.Key_Escape:
             self.close()  # Exit the application
         elif key == Qt.Key_W:
-            gl.glPolygonMode(gl.GL_FRONT_AND_BACK, gl.GL_LINE)  # Switch to wireframe rendering
+            gl.glPolygonMode(
+                gl.GL_FRONT_AND_BACK, gl.GL_LINE
+            )  # Switch to wireframe rendering
         elif key == Qt.Key_S:
-            gl.glPolygonMode(gl.GL_FRONT_AND_BACK, gl.GL_FILL)  # Switch to solid fill rendering
+            gl.glPolygonMode(
+                gl.GL_FRONT_AND_BACK, gl.GL_FILL
+            )  # Switch to solid fill rendering
         elif key == Qt.Key_Space:
             # Reset camera rotation and position
             self.spin_x_face = 0
