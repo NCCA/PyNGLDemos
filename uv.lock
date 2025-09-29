@@ -290,7 +290,7 @@ wheels = [
 [[package]]
 name = "ngl"
 version = "0.1.0"
-source = { editable = "../../../../Users/jmacey/teaching/Code/PyNGL" }
+source = { editable = "../PyNGL" }
 dependencies = [
     { name = "freetype-py" },
     { name = "glfw" },
@@ -550,7 +550,7 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "freetype-py", specifier = ">=2.5.1" },
-    { name = "ngl", editable = "../../../../Users/jmacey/teaching/Code/PyNGL" },
+    { name = "ngl", editable = "../PyNGL" },
     { name = "numpy", specifier = ">=2.3.3" },
     { name = "pysdl3", specifier = ">=0.9.8b9" },
     { name = "pyside6", specifier = ">=6.9.2" },

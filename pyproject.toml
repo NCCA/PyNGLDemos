@@ -18,7 +18,7 @@ dependencies = [
 members=["*"]
 exclude=["*"]
 [tool.uv.sources]
-ngl = { path = "/Users/jmacey/teaching/Code/PyNGL/", editable=true }
+ngl = { path = "/home/jmacey/Code/PyNGL/", editable=true }
 
 [dependency-groups]
 dev = [
