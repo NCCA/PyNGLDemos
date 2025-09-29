@@ -3,7 +3,7 @@
 import sys
 
 import OpenGL.GL as gl
-from pyngl import (
+from ncca.ngl import (
     DefaultShader,
     Mat4,
     PySideEventHandlingMixin,

@@ -9,7 +9,7 @@ It sets up a window, handles user input for rotation/translation/zoom, and manag
 import sys
 
 import OpenGL.GL as gl
-from pyngl import (
+from ncca.ngl import (
     Mat3,
     Mat4,
     PySideEventHandlingMixin,

@@ -11,7 +11,7 @@ import sys
 
 import OpenGL.GL as gl
 import sdl3
-from pyngl import Mat4, Vec3, look_at, perspective
+from ncca.ngl import Mat4, Vec3, look_at, perspective
 
 
 class Scene:

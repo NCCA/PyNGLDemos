@@ -16,7 +16,7 @@ import traceback
 
 import numpy as np
 import OpenGL.GL as gl
-from pyngl import (
+from ncca.ngl import (
     DefaultShader,
     FirstPersonCamera,
     Mat2,

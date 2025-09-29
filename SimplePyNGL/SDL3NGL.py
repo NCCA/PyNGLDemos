@@ -12,7 +12,7 @@ import sys
 import numpy as np
 import OpenGL.GL as gl
 import sdl3
-from pyngl import (
+from ncca.ngl import (
     DefaultShader,
     Mat3,
     Mat4,

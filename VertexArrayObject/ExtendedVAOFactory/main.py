@@ -12,7 +12,7 @@ import sys
 
 import OpenGL.GL as gl
 from MultiBufferIndexVAO import MultiBufferIndexVAO, VertexData
-from pyngl import (
+from ncca.ngl import (
     Mat4,
     PySideEventHandlingMixin,
     ShaderLib,

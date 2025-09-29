@@ -2,7 +2,7 @@ import ctypes
 
 import numpy as np
 import OpenGL.GL as gl
-from pyngl import AbstractVAO, VertexData, logger
+from ncca.ngl import AbstractVAO, VertexData, logger
 
 
 class MultiBufferIndexVAO(AbstractVAO):

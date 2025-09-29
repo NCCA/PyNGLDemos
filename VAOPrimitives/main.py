@@ -12,7 +12,7 @@ import traceback
 from dataclasses import dataclass
 
 import OpenGL.GL as gl
-from pyngl import (
+from ncca.ngl import (
     DefaultShader,
     Mat3,
     Mat4,
