@@ -14,8 +14,8 @@ class Terrain:
         self.height = height
         self.depth = depth
         self.num_textures = num_textures
-        self.texture_buffer = []
-        self.gl_textures = []
+        self.buffer_ids = []
+        self.texture_ids = []
         self._gen_voxels()
 
     def _gen_voxels(self):
@@ -44,23 +44,20 @@ class Terrain:
             y_pos += step
 
     def gen_texture_buffer(self) -> None:
-        # We need three buffer objects to store our voxel data
-        self.texture_ids = gl.glGenTextures(3)
+        # Generate IDs for 3 buffers and 3 textures
         self.buffer_ids = gl.glGenBuffers(3)
-        # Voxel positions buffer
+        self.texture_ids = gl.glGenTextures(3)
+
+        # 1. Voxel positions buffer and texture
         voxel_data = self.voxel_positions.to_numpy()
         gl.glBindBuffer(gl.GL_TEXTURE_BUFFER, self.buffer_ids[0])
         gl.glBufferData(
             gl.GL_TEXTURE_BUFFER, voxel_data.nbytes, voxel_data, gl.GL_STATIC_DRAW
         )
-        # active the correct texture
         gl.glBindTexture(gl.GL_TEXTURE_BUFFER, self.texture_ids[0])
-        # connect them
-        gl.glTexBuffer(
-            gl.GL_TEXTURE_BUFFER, gl.GL_RGB32F, self.buffer_ids[0]
-        )  # use format matching your data
+        gl.glTexBuffer(gl.GL_TEXTURE_BUFFER, gl.GL_RGB32F, self.buffer_ids[0])
 
-        # Texture index buffer
+        # 2. Texture index buffer and texture
         gl.glBindBuffer(gl.GL_TEXTURE_BUFFER, self.buffer_ids[1])
         gl.glBufferData(
             gl.GL_TEXTURE_BUFFER,
@@ -68,42 +65,27 @@ class Terrain:
             self.texture_index,
             gl.GL_STATIC_DRAW,
         )
-        # active the correct texture
         gl.glBindTexture(gl.GL_TEXTURE_BUFFER, self.texture_ids[1])
-        # connect them
-        gl.glTexBuffer(
-            gl.GL_TEXTURE_BUFFER, gl.GL_R32UI, self.buffer_ids[1]
-        )  # use format matching your data
+        gl.glTexBuffer(gl.GL_TEXTURE_BUFFER, gl.GL_R32UI, self.buffer_ids[1])
 
-        # is_active (visibility) buffer
-        gl.glBindBuffer(gl.GL_TEXTURE_BUFFER, self.buffer_ids[2])
+        # 3. is_active (visibility) buffer and texture
         is_active_int = self.is_active.astype(np.uint32)
+        gl.glBindBuffer(gl.GL_TEXTURE_BUFFER, self.buffer_ids[2])
         gl.glBufferData(
             gl.GL_TEXTURE_BUFFER, is_active_int.nbytes, is_active_int, gl.GL_STATIC_DRAW
         )
-        gl.glBindTexture(gl.GL_TEXTURE_BUFFER, self.texture_ids[1])
-        # connect them
-        gl.glTexBuffer(
-            gl.GL_TEXTURE_BUFFER, gl.GL_R32UI, self.buffer_ids[1]
-        )  # use format matching your data
-
-    def activate_texture_buffer(
-        self, buffer_location, texture_location, active_location
-    ) -> None:
-        gl.glActiveTexture(buffer_location)
-        gl.glBindTexture(gl.GL_TEXTURE_BUFFER, self.texture_ids[0])
-        gl.glBindBuffer(gl.GL_TEXTURE_BUFFER, self.buffer_ids[0])
-        gl.glTexBuffer(gl.GL_TEXTURE_BUFFER, gl.GL_RGB32F, self.buffer_ids[0])
-
-        gl.glActiveTexture(texture_location)
-        gl.glBindTexture(gl.GL_TEXTURE_BUFFER, self.texture_ids[1])
-        gl.glBindBuffer(gl.GL_TEXTURE_BUFFER, self.buffer_ids[1])
-        gl.glTexBuffer(gl.GL_TEXTURE_BUFFER, gl.GL_R32UI, self.buffer_ids[1])
-
-        gl.glActiveTexture(active_location)
         gl.glBindTexture(gl.GL_TEXTURE_BUFFER, self.texture_ids[2])
-        gl.glBindBuffer(gl.GL_TEXTURE_BUFFER, self.buffer_ids[2])
         gl.glTexBuffer(gl.GL_TEXTURE_BUFFER, gl.GL_R32UI, self.buffer_ids[2])
+
+    def activate_texture_buffer(self, pos_unit, index_unit, active_unit) -> None:
+        gl.glActiveTexture(pos_unit)
+        gl.glBindTexture(gl.GL_TEXTURE_BUFFER, self.texture_ids[0])
+
+        gl.glActiveTexture(index_unit)
+        gl.glBindTexture(gl.GL_TEXTURE_BUFFER, self.texture_ids[1])
+
+        gl.glActiveTexture(active_unit)
+        gl.glBindTexture(gl.GL_TEXTURE_BUFFER, self.texture_ids[2])
 
     def remove_index(self, index: int) -> None:
         if index > len(self.texture_index):

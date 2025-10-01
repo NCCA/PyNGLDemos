@@ -69,10 +69,10 @@ class MainWindow(PySideEventHandlingMixin, QOpenGLWindow):
         self.window_height: int = 720  # Window height
         self.setTitle("Texture Buffer Voxel Rendering on the GPU")
         self._setup_camera()
-        self.debug = False
+        self.debug = True
 
     def _setup_camera(self):
-        eye = Vec3(0, 10, 60)
+        eye = Vec3(0, 10, 260)
         look = Vec3(0, 0, 0)
         up = Vec3(0, 1, 0)
         self.camera = FirstPersonCamera(eye, look, up, 45.0)
@@ -171,35 +171,54 @@ class MainWindow(PySideEventHandlingMixin, QOpenGLWindow):
         This is the main rendering loop where all drawing commands are issued.
         """
         self.makeCurrent()
+        # Render the scene to our custom framebuffer
         with self.render_fbo as fbo:
             fbo.set_viewport()
             gl.glClear(gl.GL_COLOR_BUFFER_BIT | gl.GL_DEPTH_BUFFER_BIT)
-            gl.glViewport(0, 0, self.window_width, self.window_height)
-            print(self.camera.get_vp())
+
+            ShaderLib.use(VOXEL_SHADER)
             ShaderLib.set_uniform("MVP", self.camera.get_vp())
-            gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.vao)
+
+            # Bind the texture atlas to texture unit 0
             gl.glActiveTexture(gl.GL_TEXTURE0)
             gl.glBindTexture(gl.GL_TEXTURE_2D, self.texture_id)
+
+            # Bind the terrain data (TBOs) to texture units 1, 2, and 3
             self.terrain.activate_texture_buffer(
                 gl.GL_TEXTURE1, gl.GL_TEXTURE2, gl.GL_TEXTURE3
             )
+
+            # Draw the points that will be turned into voxels by the geometry shader
             gl.glBindVertexArray(self.vao)
             gl.glDrawArrays(gl.GL_POINTS, 0, len(self.terrain.voxel_positions))
-        # now to blit the result
-        gl.glBindFramebuffer(gl.GL_READ_FRAMEBUFFER, self.render_fbo.id)
-        if not self.debug:
-            gl.glReadBuffer(gl.GL_COLOR_ATTACHMENT0)
+            gl.glBindVertexArray(0)
+
+        # Now, copy the result from our FBO to the screen
+
+        # Bind the FBO for reading
+        gl.glBindFramebuffer(gl.GL_READ_FRAMEBUFFER, self.render_fbo.get_id())
+        # Bind the default window framebuffer for drawing
+        gl.glBindFramebuffer(gl.GL_DRAW_FRAMEBUFFER, self.defaultFramebufferObject())
+
+        # Select which color attachment to read from based on the debug flag
+        if self.debug:
+            gl.glReadBuffer(gl.GL_COLOR_ATTACHMENT1)  # Use the ID buffer for debugging
         else:
-            w = self.render_fbo.width
-            h = self.render_fbo.height
-            gl.glReadBuffer(gl.GL_COLOR_ATTACHMENT1)
-            gl.glBindFramebuffer(
-                gl.GL_DRAW_FRAMEBUFFER, self.defaultFramebufferObject()
-            )  # // default framebuffer
-            gl.glBlitFramebuffer(
-                0, 0, w, h, 0, 0, w, h, gl.GL_COLOR_BUFFER_BIT, gl.GL_NEAREST
-            )
-            gl.glReadBuffer(gl.GL_COLOR_ATTACHMENT0)
+            gl.glReadBuffer(gl.GL_COLOR_ATTACHMENT0)  # Use the main color buffer
+
+        # Get the FBO dimensions for the blit operation
+        w = self.render_fbo.width
+        h = self.render_fbo.height
+
+        # Perform the blit. This copies the FBO content to the screen.
+        gl.glBlitFramebuffer(
+            0, 0, w, h, 0, 0, w, h, gl.GL_COLOR_BUFFER_BIT, gl.GL_NEAREST
+        )
+
+        # It's good practice to re-bind the default FBO for both read and draw
+        # and reset the read buffer to the default when done.
+        gl.glBindFramebuffer(gl.GL_FRAMEBUFFER, self.defaultFramebufferObject())
+        gl.glReadBuffer(gl.GL_BACK)
 
     def resizeGL(self, w: int, h: int) -> None:
         """
