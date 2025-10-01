@@ -21,6 +21,7 @@ from ncca.ngl import (
     Primitives,
     PySideEventHandlingMixin,
     ShaderLib,
+    Text,
     Transform,
     VAOFactory,
     VAOType,
@@ -125,6 +126,8 @@ class MainWindow(PySideEventHandlingMixin, QOpenGLWindow):
         print(f"{self.blur_fbo.get_texture_id("blurTarget")=}")
         gl.glActiveTexture(gl.GL_TEXTURE2)
         gl.glBindTexture(gl.GL_TEXTURE_2D, self.blur_fbo.get_texture_id("blurTarget"))
+        Text.add_font("Arial", "../../font/Arial.ttf", 40)
+
         self.startTimer(10)
 
     def _create_fbos(self):
@@ -271,7 +274,7 @@ class MainWindow(PySideEventHandlingMixin, QOpenGLWindow):
         # Set the viewport to cover the entire window
         gl.glViewport(0, 0, self.window_width, self.window_height)
         # Clear the color and depth buffers from the previous frame
-        gl.glClear(gl.GL_COLOR_BUFFER_BIT | gl.GL_DEPTH_BUFFER_BIT)
+        gl.glClear(gl.GL_COLOR_BUFFER_BIT or gl.GL_DEPTH_BUFFER_BIT)
         # Pass one draw to FBO
         ShaderLib.use(PHONG_SHADER)
         rot_x = Mat4().rotate_x(self.spin_x_face)
@@ -281,6 +284,16 @@ class MainWindow(PySideEventHandlingMixin, QOpenGLWindow):
         self.mouse_global_tx[3][0] = self.model_position.x
         self.mouse_global_tx[3][1] = self.model_position.y
         self.mouse_global_tx[3][2] = self.model_position.z
+
+        gl.glActiveTexture(gl.GL_TEXTURE0)
+        gl.glBindTexture(
+            gl.GL_TEXTURE_2D, self.render_fbo.get_texture_id("renderTarget")
+        )
+        gl.glActiveTexture(gl.GL_TEXTURE1)
+        gl.glBindTexture(gl.GL_TEXTURE_2D, self.render_fbo.depth_texture_id)
+        gl.glActiveTexture(gl.GL_TEXTURE2)
+        gl.glBindTexture(gl.GL_TEXTURE_2D, self.blur_fbo.get_texture_id("blurTarget"))
+
         with self.render_fbo:
             gl.glViewport(0, 0, self.window_width, self.window_height)
             gl.glClear(gl.GL_COLOR_BUFFER_BIT | gl.GL_DEPTH_BUFFER_BIT)
@@ -331,6 +344,42 @@ class MainWindow(PySideEventHandlingMixin, QOpenGLWindow):
                 "screenResolution", Vec2(self.window_width, self.window_height)
             )
             self.screen_quad.draw()
+        gl.glViewport(0, 0, self.window_width, self.window_height)
+        self._render_info()
+
+    def _render_info(self):
+        Text.render_text(
+            "Arial",
+            10,
+            40,
+            "Depth of Field Demo Use Arrows and OP / KL to change params",
+            Vec3(1.0, 1.0, 0.0),
+        )
+        Text.render_text(
+            "Arial",
+            10,
+            40 * 2,
+            f"Focal distance: {self.focal_distance:.2f}",
+            Vec3(1.0, 1.0, 0.0),
+        )
+        Text.render_text(
+            "Arial", 10, 40 * 3, f"F-Stop : {self.fstop:.2f}", Vec3(1.0, 1.0, 0.0)
+        )
+        Text.render_text(
+            "Arial",
+            10,
+            40 * 4,
+            f"Focal Length: {self.focal_length:.2f}",
+            Vec3(1.0, 1.0, 0.0),
+        )
+        Text.render_text("Arial", 10, 40 * 5, f"AV: {self.av:.2f}", Vec3(1.0, 1.0, 0.0))
+        Text.render_text(
+            "Arial",
+            10,
+            40 * 6,
+            f"Focus Distance: {self.focus_distance:.2f}",
+            Vec3(1.0, 1.0, 0.0),
+        )
 
         # --- All drawing code should go here ---
 
@@ -349,6 +398,8 @@ class MainWindow(PySideEventHandlingMixin, QOpenGLWindow):
         # Update the projection matrix to match the new aspect ratio.
         # This creates a perspective projection with a 45-degree field of view.
         self.project = perspective(45.0, float(w) / h, 0.01, 350.0)
+
+        Text.set_screen_size(self.window_width, self.window_height)
 
     def timerEvent(self, event):
         self.update()

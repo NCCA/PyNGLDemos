@@ -253,7 +253,7 @@ wheels = [
 
 [[package]]
 name = "ncca-ngl"
-version = "0.1.3"
+version = "0.1.5"
 source = { editable = "../../../../Users/jmacey/teaching/Code/PyNGL" }
 dependencies = [
     { name = "freetype-py" },

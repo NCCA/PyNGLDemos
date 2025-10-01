@@ -135,7 +135,7 @@ class MainWindow(QOpenGLWindow):
 
         ShaderLib.use(DefaultShader.COLOUR)
         ShaderLib.set_uniform("MVP", self.project @ self.view @ self.mouse_global_tx)
-        ShaderLib.set_uniform("Colour", 1, 1, 1, 1)
+        ShaderLib.set_uniform("Colour", 1.0, 1.0, 1.0, 1.0)
         Primitives.draw("teapot")
         Text.render_text(
             "Arial",
@@ -166,11 +166,15 @@ class MainWindow(QOpenGLWindow):
             "Arial", 10, 350, "In initalizeGL we add our font, once per Font / size"
         )
         Text.render_text(
-            "Arial", 10, 400, 'Text.add_font("Arial", "Arial.ttf", 20)', Vec3(0, 0, 0)
+            "Arial",
+            10,
+            400,
+            'Text.add_font("Arial", "Arial.ttf", 20)',
+            Vec3(0.0, 0.0, 0.0),
         )
         Text.render_text("Arial", 10, 440, "To Render we call")
         text = """Text.render_text("Arial", 10, 440, 'To Render we call' )"""
-        Text.render_text("Arial", 10, 480, text, Vec3(0, 0, 0))
+        Text.render_text("Arial", 10, 480, text, Vec3(0.0, 0.0, 0.0))
         Text.render_text("Arial", 10, 520, "In resizeGL we add this to scale the size")
         text = """Text.set_screen_size(self.window_width, self.window_height)"""
         Text.render_text("Arial", 10, 560, text, Vec3(0, 0, 0))
