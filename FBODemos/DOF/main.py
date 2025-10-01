@@ -32,6 +32,7 @@ from ncca.ngl import (
     look_at,
     perspective,
 )
+from PySide6.QtCore import Qt
 from PySide6.QtGui import QSurfaceFormat
 from PySide6.QtOpenGL import QOpenGLWindow
 from PySide6.QtWidgets import QApplication
@@ -162,7 +163,7 @@ class MainWindow(PySideEventHandlingMixin, QOpenGLWindow):
             )
             self.blur_fbo.bind()
             self.blur_fbo.add_colour_attachment(
-                "blueTarget",
+                "blurTarget",
                 GLAttachment._0,
                 GLTextureFormat.RGBA,
                 GLTextureInternalFormat.RGBA8,
@@ -174,13 +175,18 @@ class MainWindow(PySideEventHandlingMixin, QOpenGLWindow):
                 True,
             )
 
-            logger.info(f"blueTargetID {self.blur_fbo.id}")
+            logger.info(f"blurTargetID {self.blur_fbo.id}")
             self.blur_fbo.print()
             logger.info(f"Is complete {self.blur_fbo.is_complete()}")
 
     def _load_dof_uniforms(self):
         ShaderLib.use(DOF_SHADER)
-        magnification = self.focal_length / abs(self.focal_distance - self.focal_length)
+        try:
+            magnification = self.focal_length / abs(
+                self.focal_distance - self.focal_length
+            )
+        except ZeroDivisionError:
+            magnification = 0.0
         blur = self.focal_length * magnification / self.fstop
         ppm = (
             math.sqrt(
@@ -346,6 +352,31 @@ class MainWindow(PySideEventHandlingMixin, QOpenGLWindow):
 
     def timerEvent(self, event):
         self.update()
+
+    def keyPressEvent(self, event):
+        if event.key() == Qt.Key_Escape:
+            self.close()
+        elif event.key() == Qt.Key_Left:
+            self.av -= 1
+            self.fstop = math.sqrt(math.pow(2, self.av))
+        elif event.key() == Qt.Key_Right:
+            self.av += 1
+            self.fstop = math.sqrt(math.pow(2, self.av))
+        elif event.key() == Qt.Key_Up:
+            self.focal_distance += 0.1
+        elif event.key() == Qt.Key_Down:
+            self.focal_distance -= 0.1
+        elif event.key() == Qt.Key_I:
+            self.focal_length += 0.1
+        elif event.key() == Qt.Key_O:
+            self.focal_length -= 0.1
+        elif event.key() == Qt.Key_K:
+            self.focus_distance += 0.1
+        elif event.key() == Qt.Key_L:
+            self.focus_distance -= 0.1
+
+        else:
+            super().keyPressEvent(event)
 
 
 class DebugApplication(QApplication):
