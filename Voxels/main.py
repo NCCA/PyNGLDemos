@@ -120,8 +120,8 @@ class MainWindow(PySideEventHandlingMixin, QOpenGLWindow):
     def _create_framebuffer(self):
         FrameBufferObject.set_default_fbo(self.defaultFramebufferObject())
         self.render_fbo = FrameBufferObject.create(
-            self.window_width * self.devicePixelRatio(),
-            self.window_height * self.devicePixelRatio(),
+            int(self.window_width * self.devicePixelRatio()),
+            int(self.window_height * self.devicePixelRatio()),
         )
         with self.render_fbo:
             self.render_fbo.bind()

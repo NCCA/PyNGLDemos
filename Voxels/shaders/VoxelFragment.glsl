@@ -21,6 +21,6 @@ void main()
 {
     if (isactive == 0)
         discard;
-    outColour = vec4(1);  //texture(textureSampler, textureCoords);
+    outColour =texture(textureSampler, textureCoords);
     indexID = encodeIDToRGBA(vertID);
 }
