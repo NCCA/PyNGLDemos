@@ -17,6 +17,7 @@ from ncca.ngl import (
     Mat3,
     Mat4,
     Primitives,
+    Prims,
     ShaderLib,
     Vec3,
     look_at,
@@ -104,7 +105,7 @@ class Scene:
         ShaderLib.set_uniform("metallic", 1.02)
         ShaderLib.set_uniform("roughness", 0.38)
         ShaderLib.set_uniform("ao", 0.2)
-        Primitives.create_triangle_plane("floor", 20, 20, 1, 1, Vec3(0, 1, 0))
+        Primitives.create(Prims.TRIANGLE_PLANE, "floor", 20, 20, 1, 1, Vec3(0, 1, 0))
         ShaderLib.print_registered_uniforms(PBR_SHADER)
         ShaderLib.use(DefaultShader.CHECKER)
         ShaderLib.set_uniform("lightDiffuse", 1.0, 1.0, 1.0, 1.0)
@@ -115,7 +116,7 @@ class Scene:
         ShaderLib.set_uniform("checkSize", 60.0)
         ShaderLib.print_registered_uniforms(DefaultShader.CHECKER)
         Primitives.load_default_primitives()
-        Primitives.create_triangle_plane("floor", 20, 20, 1, 1, Vec3(0, 1, 0))
+        Primitives.create(Prims.TRIANGLE_PLANE, "floor", 20, 20, 1, 1, Vec3(0, 1, 0))
 
     def resize(self, w: int, h: int) -> None:
         """

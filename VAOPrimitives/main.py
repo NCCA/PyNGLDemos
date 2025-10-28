@@ -17,6 +17,7 @@ from ncca.ngl import (
     Mat3,
     Mat4,
     Primitives,
+    Prims,
     ShaderLib,
     Transform,
     Vec3,
@@ -103,13 +104,13 @@ class MainWindow(QOpenGLWindow):
         ShaderLib.set_uniform("lightDiffuse", 1.0, 1.0, 1.0, 1.0)
         Primitives.load_default_primitives()
         # Add a ground plane
-        Primitives.create_triangle_plane("ground", 10, 10, 20, 20, Vec3(0, 1, 0))
-        Primitives.create_sphere("sphere", 0.3, 32)
-        Primitives.create_cone("cone", 0.5, 1.0, 20, 20)
-        Primitives.create_capsule("capsule", 0.2, 0.4, 20)
-        Primitives.create_cylinder("cylinder", 0.2, 0.4, 20, 20)
-        Primitives.create_torus("torus", 0.1, 0.3, 20, 20)
-        Primitives.create_disk("disk", 0.5, 20)
+        Primitives.create(Prims.TRIANGLE_PLANE, "ground", 10, 10, 20, 20, Vec3(0, 1, 0))
+        Primitives.create(Prims.SPHERE, "sphere", 0.3, 32)
+        Primitives.create(Prims.CONE, "cone", 0.5, 1.0, 20, 20)
+        Primitives.create(Prims.CAPSULE, "capsule", 0.2, 0.4, 20)
+        Primitives.create(Prims.CYLINDER, "cylinder", 0.2, 0.4, 20, 20)
+        Primitives.create(Prims.TORUS, "torus", 0.1, 0.3, 20, 20)
+        Primitives.create(Prims.DISK, "disk", 0.5, 20)
 
     def load_matrices_to_shader(self, transform) -> None:
         """

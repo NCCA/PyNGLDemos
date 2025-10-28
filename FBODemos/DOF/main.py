@@ -19,6 +19,7 @@ from ncca.ngl import (
     Mat3,
     Mat4,
     Primitives,
+    Prims,
     PySideEventHandlingMixin,
     ShaderLib,
     Text,
@@ -110,8 +111,8 @@ class MainWindow(PySideEventHandlingMixin, QOpenGLWindow):
         self._setup_checker_shader()
         self._setup_dof_shader()
         Primitives.load_default_primitives()
-        Primitives.create_triangle_plane("floor", 25, 25, 1, 1, Vec3(0, 1, 0))
-        Primitives.create_sphere("sphere", 0.4, 80)
+        Primitives.create(Prims.TRIANGLE_PLANE, "floor", 25, 25, 1, 1, Vec3(0, 1, 0))
+        Primitives.create(Prims.SPHERE, "sphere", 0.4, 80)
         self._create_screen_quad()
         self._create_fbos()
         gl.glEnable(gl.GL_DEPTH_TEST)

@@ -15,6 +15,7 @@ from ncca.ngl import (
     Mat3,
     Mat4,
     Primitives,
+    Prims,
     PySideEventHandlingMixin,
     ShaderLib,
     Transform,
@@ -86,8 +87,8 @@ class MainWindow(PySideEventHandlingMixin, QOpenGLWindow):
         self._create_texture_object()
         self._create_fbo()
         Primitives.load_default_primitives()
-        Primitives.create_triangle_plane("plane", 2, 2, 20, 20, Vec3(0, 1, 0))
-        Primitives.create_sphere("sphere", 0.4, 80)
+        Primitives.create(Prims.TRIANGLE_PLANE, "plane", 2, 2, 20, 20, Vec3(0, 1, 0))
+        Primitives.create(Prims.SPHERE, "sphere", 0.4, 80)
         self.startTimer(60)
 
     def _load_shaders(self):

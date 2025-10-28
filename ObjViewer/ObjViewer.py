@@ -260,10 +260,23 @@ class DebugApplication(QApplication):
 if __name__ == "__main__":
     # Set up Qt application and OpenGL format
     # Check for a "--debug" command-line argument to run the DebugApplication
-    if len(sys.argv) > 1 and "--debug" in sys.argv:
+    if "--debug" in sys.argv:
         app = DebugApplication(sys.argv)
+        sys.argv.remove("--debug")
     else:
         app = QApplication(sys.argv)
+
+    # now remove --debug from command line args
+    # check to see if we are passing a file and texture name.
+    if len(sys.argv) == 3:
+        oname = sys.argv[1]
+        tname = sys.argv[2]
+    elif len(sys.argv) == 2:
+        oname = sys.argv[1]
+        tname = "textures/ratGrid.png"
+    else:
+        oname = "models/Helix.obj"
+        tname = "textures/helix_base.tif"
 
     format = QSurfaceFormat()
     format.setSamples(4)
@@ -273,7 +286,7 @@ if __name__ == "__main__":
     format.setDepthBufferSize(24)
     QSurfaceFormat.setDefaultFormat(format)
 
-    window = MainWindow("models/Helix.obj", "textures/helix_base.tif")
+    window = MainWindow(oname, tname)
     window.setFormat(format)
     window.resize(1024, 720)
     window.show()

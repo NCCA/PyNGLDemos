@@ -17,6 +17,7 @@ from ncca.ngl import (
     Mat3,
     Mat4,
     Primitives,
+    Prims,
     PySideEventHandlingMixin,
     ShaderLib,
     Transform,
@@ -122,8 +123,8 @@ class MainWindow(PySideEventHandlingMixin, QOpenGLWindow):
         ShaderLib.use(DefaultShader.COLOUR)
         ShaderLib.set_uniform("Colour", 1.0, 1.0, 1.0, 1.0)
 
-        Primitives.create_sphere("sphere", 0.5, 40)
-        Primitives.create_triangle_plane("floor", 20, 20, 10, 10, Vec3(0, 1, 0))
+        Primitives.create(Prims.SPHERE, "sphere", 0.5, 40)
+        Primitives.create(Prims.TRIANGLE_PLANE, "floor", 20, 20, 10, 10, Vec3(0, 1, 0))
 
     def load_matrices_to_shader(self):
         M = self.mouse_global_tx @ self.transform.get_matrix()

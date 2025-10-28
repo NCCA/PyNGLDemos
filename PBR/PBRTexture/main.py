@@ -23,6 +23,7 @@ from ncca.ngl import (
     Mat3,
     Mat4,
     Primitives,
+    Prims,
     Random,
     ShaderLib,
     Transform,
@@ -105,8 +106,8 @@ class MainWindow(QOpenGLWindow):
         self._setup_lights()
 
         # Create and load geometry
-        Primitives.create_sphere("sphere", 0.5, 40)
-        Primitives.create_triangle_plane("floor", 30, 30, 10, 10, Vec3(0, 1, 0))
+        Primitives.create(Prims.SPHERE, "sphere", 0.5, 40)
+        Primitives.create(Prims.TRIANGLE_PLANE, "floor", 30, 30, 10, 10, Vec3(0, 1, 0))
         TexturePack.load_json("textures/textures.json")
         Primitives.load_default_primitives()
 
