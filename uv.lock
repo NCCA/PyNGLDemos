@@ -408,8 +408,8 @@ wheels = [
 
 [[package]]
 name = "ncca-ngl"
-version = "0.2.2"
-source = { registry = "https://pypi.org/simple" }
+version = "0.2.3"
+source = { editable = "../../../../Users/jmacey/teaching/Code/PyNGL" }
 dependencies = [
     { name = "freetype-py" },
     { name = "glfw" },
@@ -418,9 +418,24 @@ dependencies = [
     { name = "pyopengl" },
     { name = "pyside6" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/98/8b/122d66622d9cd113cba2691602fc64a2de4d810835aa9df67d875c4a601b/ncca_ngl-0.2.2.tar.gz", hash = "sha256:1f7e5355960f971b23434907e2655b99ca893c7062c9c96b11e00ad6544ee708", size = 29961669, upload-time = "2025-10-28T22:05:38.23Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/e7/c3/6f1872f75313fb3f8a40474f1f946be87d93dc5e1815de55c43b7dc5b0fa/ncca_ngl-0.2.2-py3-none-any.whl", hash = "sha256:11f5b529b6245b4cbc1da7326a4b2d5335e46a86e10985dff8558b87099d4802", size = 29982232, upload-time = "2025-10-28T22:04:28.454Z" },
+
+[package.metadata]
+requires-dist = [
+    { name = "freetype-py", specifier = ">=2.5.1" },
+    { name = "glfw", specifier = ">=2.9.0" },
+    { name = "numpy", specifier = ">=2.3.3" },
+    { name = "pillow" },
+    { name = "pyopengl" },
+    { name = "pyside6", specifier = ">=6.9.2" },
+]
+
+[package.metadata.requires-dev]
+dev = [
+    { name = "coverage", specifier = ">=7.10.6" },
+    { name = "pre-commit", specifier = ">=4.3.0" },
+    { name = "pytest", specifier = ">=8.4.2" },
+    { name = "pytest-cov", specifier = ">=7.0.0" },
+    { name = "ruff", specifier = ">=0.13.0" },
 ]
 
 [[package]]
@@ -660,7 +675,7 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "freetype-py", specifier = ">=2.5.1" },
-    { name = "ncca-ngl" },
+    { name = "ncca-ngl", editable = "../../../../Users/jmacey/teaching/Code/PyNGL" },
     { name = "numpy", specifier = ">=2.3.3" },
     { name = "pysdl3", specifier = ">=0.9.8b9" },
     { name = "pyside6", specifier = ">=6.9.2" },
