@@ -11,7 +11,8 @@ dependencies = [
     "ncca-ngl",
     "freetype-py>=2.5.1",
     "pysdl3>=0.9.8b9",
-    "wgpu"
+    "wgpu",
+    "marimo>=0.17.2",
 ]
 
 
