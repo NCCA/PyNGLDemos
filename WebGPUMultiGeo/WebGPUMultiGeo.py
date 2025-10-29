@@ -133,11 +133,11 @@ class WebGPUScene(NumpyBufferWidget):
         tx.set_scale(0.1, 0.1, 0.1)
         tx.set_position(-1.0, 0.0, 0.0)
         self.pipeline.render_mesh(
-            Prims.BUDDHA, self.mouse_global_tx @ tx.get_matrix(), 0
+            Prims.BUDDHA, self.mouse_global_tx @ tx.get_matrix(), (1, 0, 0, 1), 0
         )
         tx.reset()
         self.pipeline.render_mesh(
-            Prims.TEAPOT, self.mouse_global_tx @ tx.get_matrix(), 1
+            Prims.TEAPOT, self.mouse_global_tx @ tx.get_matrix(), (0, 1, 0, 1), 1
         )
         self.pipeline.end_render_pass()
         self._update_colour_buffer(self.colour_buffer_texture)

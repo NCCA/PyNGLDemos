@@ -182,7 +182,7 @@ class Pipeline:
             },
         )
 
-    def update_uniform_buffers(self, index, model) -> None:
+    def update_uniform_buffers(self, index, model, colour) -> None:
         """
         update the uniform buffers.
         """
@@ -194,7 +194,7 @@ class Pipeline:
         self.vertex_uniform_data["model_view"] = model_view.to_numpy()
         self.vertex_uniform_data["MVP"] = MVP.to_numpy()
         self.vertex_uniform_data["normal_matrix"] = normal_matrix.to_numpy()
-        self.vertex_uniform_data["colour"] = (1.0, 0.0, 0.0, 1.0)
+        self.vertex_uniform_data["colour"] = colour
         self.device.queue.write_buffer(
             buffer=self.vertex_uniform_buffer,
             buffer_offset=self.vertex_uniform_data.nbytes * index,
@@ -223,13 +223,13 @@ class Pipeline:
         self.render_pass.set_viewport(0, 0, 1024, 1024, 0, 1)
         self.render_pass.set_pipeline(self.pipeline)
 
-    def render_mesh(self, mesh: str, transform, index) -> None:
+    def render_mesh(self, mesh: str, transform, colour, index) -> None:
         """
         Paint the WebGPU content.
 
         This method renders the WebGPU content for the scene.
         """
-        self.update_uniform_buffers(index, transform)
+        self.update_uniform_buffers(index, transform, colour)
         self.render_pass.set_bind_group(0, self.bind_group_0, [index * 256], 0, 999999)
         self.render_pass.set_bind_group(1, self.bind_group_0, [index * 256], 0, 999999)
         self.render_pass.set_vertex_buffer(0, self.prim_buffers[mesh][0])
