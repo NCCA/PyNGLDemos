@@ -203,15 +203,9 @@ class Pipeline:
             data=self.vertex_uniform_data.tobytes(),
         )
 
-    def paint(self, texture_view, depth_buffer_view, mesh: str, transform) -> None:
-        """
-        Paint the WebGPU content.
-
-        This method renders the WebGPU content for the scene.
-        """
-        self.update_uniform_buffers(transform)
-        command_encoder = self.device.create_command_encoder()
-        render_pass = command_encoder.begin_render_pass(
+    def begin_render_pass(self, texture_view, depth_buffer_view):
+        self.command_encoder = self.device.create_command_encoder()
+        self.render_pass = self.command_encoder.begin_render_pass(
             color_attachments=[
                 {
                     "view": texture_view,
@@ -228,11 +222,22 @@ class Pipeline:
                 "depth_clear_value": 1.0,
             },
         )
-        render_pass.set_viewport(0, 0, 1024, 1024, 0, 1)
-        render_pass.set_pipeline(self.pipeline)
-        render_pass.set_bind_group(0, self.bind_group_0, [0], 0, 999999)
-        render_pass.set_bind_group(1, self.bind_group_0, [0], 0, 999999)
-        render_pass.set_vertex_buffer(0, self.prim_buffers[mesh][0])
-        render_pass.draw(self.prim_buffers[mesh][1])
-        render_pass.end()
-        self.device.queue.submit([command_encoder.finish()])
+        self.render_pass.set_viewport(0, 0, 1024, 1024, 0, 1)
+        self.render_pass.set_pipeline(self.pipeline)
+
+    def render_mesh(self, mesh: str, transform) -> None:
+        """
+        Paint the WebGPU content.
+
+        This method renders the WebGPU content for the scene.
+        """
+        self.update_uniform_buffers(transform)
+        self.render_pass.set_bind_group(0, self.bind_group_0, [0], 0, 999999)
+        self.render_pass.set_bind_group(1, self.bind_group_0, [0], 0, 999999)
+        self.render_pass.set_vertex_buffer(0, self.prim_buffers[mesh][0])
+
+        self.render_pass.draw(self.prim_buffers[mesh][1])
+
+    def end_render_pass(self) -> None:
+        self.render_pass.end()
+        self.device.queue.submit([self.command_encoder.finish()])

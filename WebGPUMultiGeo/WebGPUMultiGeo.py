@@ -3,7 +3,7 @@ import sys
 
 import numpy as np
 import wgpu
-from ncca.ngl import Mat4, PrimData, Prims, Vec3, Vec4, look_at, perspective
+from ncca.ngl import Mat4, PrimData, Prims, Transform, Vec3, Vec4, look_at, perspective
 from NumpyBufferWidget import NumpyBufferWidget
 from Pipeline import Pipeline
 from PySide6.QtCore import Qt
@@ -126,12 +126,16 @@ class WebGPUScene(NumpyBufferWidget):
         This method renders the WebGPU content for the scene.
         """
         self.update_uniform_buffers()
-        self.pipeline.paint(
-            self.texture_view,
-            self.depth_buffer_view,
-            Prims.BUDDHA,
-            self.mouse_global_tx,
-        )
+
+        self.pipeline.begin_render_pass(self.texture_view, self.depth_buffer_view)
+
+        tx = Transform()
+        tx.set_scale(0.1, 0.1, 0.1)
+        tx.set_position(-1.0, 0.0, 0.0)
+        self.pipeline.render_mesh(Prims.BUDDHA, self.mouse_global_tx @ tx.get_matrix())
+        tx.reset()
+        self.pipeline.render_mesh(Prims.TEAPOT, self.mouse_global_tx @ tx.get_matrix())
+        self.pipeline.end_render_pass()
         self._update_colour_buffer(self.colour_buffer_texture)
 
     def update_uniform_buffers(self) -> None:
