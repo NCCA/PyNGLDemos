@@ -22,14 +22,9 @@ class Pipeline:
         self.light_pos = light_pos
         self.view = view
         self.project = project
-        self._create_render_pipeline()
-        teapot = PrimData.primitive(Prims.TEAPOT.value)
-        self.teapot_size = teapot.size // 8
-        self.vertex_buffer = self.device.create_buffer_with_data(
-            data=teapot, usage=wgpu.BufferUsage.VERTEX
-        )
         self.prim_buffers = {}
         self._create_buffers()
+        self._create_render_pipeline()
 
     def _create_buffers(self):
         teapot = PrimData.primitive(Prims.TEAPOT.value)
@@ -98,11 +93,14 @@ class Pipeline:
                 ("padding", "float32", (12)),  # to 256 bytes
             ],
         )
-        self.vertex_uniform_buffer = self.device.create_buffer_with_data(
-            data=self.vertex_uniform_data.tobytes(),
+        num_meshes = len(self.prim_buffers.items())
+        buffer_size = num_meshes * self.vertex_uniform_data.nbytes
+        self.vertex_uniform_buffer = self.device.create_buffer(
+            size=buffer_size,
             usage=wgpu.BufferUsage.UNIFORM | wgpu.BufferUsage.COPY_DST,
-            label="vertex_uniform_buffer",
+            label="vertex_uniform_data",
         )
+
         # Create a uniform buffer for the light. This is just a single light
         light_uniform_data = np.zeros(
             (), dtype=[("light_pos", "float32", (4)), ("light_diffuse", "float32", (4))]
@@ -184,7 +182,7 @@ class Pipeline:
             },
         )
 
-    def update_uniform_buffers(self, model) -> None:
+    def update_uniform_buffers(self, index, model) -> None:
         """
         update the uniform buffers.
         """
@@ -199,7 +197,7 @@ class Pipeline:
         self.vertex_uniform_data["colour"] = (1.0, 0.0, 0.0, 1.0)
         self.device.queue.write_buffer(
             buffer=self.vertex_uniform_buffer,
-            buffer_offset=0,
+            buffer_offset=self.vertex_uniform_data.nbytes * index,
             data=self.vertex_uniform_data.tobytes(),
         )
 
@@ -225,15 +223,15 @@ class Pipeline:
         self.render_pass.set_viewport(0, 0, 1024, 1024, 0, 1)
         self.render_pass.set_pipeline(self.pipeline)
 
-    def render_mesh(self, mesh: str, transform) -> None:
+    def render_mesh(self, mesh: str, transform, index) -> None:
         """
         Paint the WebGPU content.
 
         This method renders the WebGPU content for the scene.
         """
-        self.update_uniform_buffers(transform)
-        self.render_pass.set_bind_group(0, self.bind_group_0, [0], 0, 999999)
-        self.render_pass.set_bind_group(1, self.bind_group_0, [0], 0, 999999)
+        self.update_uniform_buffers(index, transform)
+        self.render_pass.set_bind_group(0, self.bind_group_0, [index * 256], 0, 999999)
+        self.render_pass.set_bind_group(1, self.bind_group_0, [index * 256], 0, 999999)
         self.render_pass.set_vertex_buffer(0, self.prim_buffers[mesh][0])
 
         self.render_pass.draw(self.prim_buffers[mesh][1])
