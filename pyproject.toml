@@ -1,3 +1,8 @@
+
+
+
+
+
 [project]
 name = "pyngldemos"
 version = "0.1.0"
@@ -22,7 +27,7 @@ members=["*"]
 exclude=["*"]
 [tool.uv.sources]
 ncca-ngl = [
-{ path = "/Users/jmacey/teaching/Code/PyNGL/", editable=true}
+{ path = "/home/jmacey/Code/PyNGL/", editable=true}
 ]
 
 [dependency-groups]

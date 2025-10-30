@@ -55,8 +55,8 @@ class ArcballCamera:
         self.last_mouse_pos = [0, 0]
 
         # IMPROVED SENSITIVITY - Much more responsive!
-        self.rotate_sensitivity = 2.0  # Increased from 0.005
-        self.pan_sensitivity = 2.5  # Increased from 0.001
+        self.rotate_sensitivity = 1.0  # Increased from 0.005
+        self.pan_sensitivity = 0.01  # Increased from 0.001
         self.zoom_sensitivity = 0.15  # Slightly increased
 
         # Track mouse speed for acceleration
@@ -109,26 +109,24 @@ class ArcballCamera:
         xy, xz, yz = x * y, x * z, y * z
         wx, wy, wz = w * x, w * y, w * z
 
-        return Mat4(
-            [
-                1 - 2 * (yy + zz),
-                2 * (xy - wz),
-                2 * (xz + wy),
-                0,
-                2 * (xy + wz),
-                1 - 2 * (xx + zz),
-                2 * (yz - wx),
-                0,
-                2 * (xz - wy),
-                2 * (yz + wx),
-                1 - 2 * (xx + yy),
-                0,
-                0,
-                0,
-                0,
-                1,
-            ]
-        )
+        return Mat4([
+            1 - 2 * (yy + zz),
+            2 * (xy - wz),
+            2 * (xz + wy),
+            0,
+            2 * (xy + wz),
+            1 - 2 * (xx + zz),
+            2 * (yz - wx),
+            0,
+            2 * (xz - wy),
+            2 * (yz + wx),
+            1 - 2 * (xx + yy),
+            0,
+            0,
+            0,
+            0,
+            1,
+        ])
 
     def rotate_vector_by_quaternion(self, vec, quat):
         """Rotate a vector by a quaternion."""
@@ -151,27 +149,16 @@ class ArcballCamera:
         """Start rotation operation."""
         self.is_rotating = True
         self.last_arcball = self.screen_to_arcball(x, y, width, height)
-        self.start_quaternion = self.quaternion[:]
 
     def update_rotation(self, x, y, width, height):
         """Update rotation with improved sensitivity and acceleration."""
         if not self.is_rotating:
             return
 
-        # Get mouse movement delta for acceleration
-        dx = x - self.last_mouse_pos[0] if hasattr(self, "last_mouse_pos") else 0
-        dy = y - self.last_mouse_pos[1] if hasattr(self, "last_mouse_pos") else 0
-
-        # Calculate mouse velocity for acceleration
-        mouse_speed = math.sqrt(dx * dx + dy * dy)
-        acceleration = min(mouse_speed / 10.0, 3.0)  # Cap acceleration at 3x
-
         current_arcball = self.screen_to_arcball(x, y, width, height)
 
         # Calculate rotation quaternion
-        dot_product = sum(
-            a * b for a, b in zip(self.last_arcball, current_arcball, strict=False)
-        )
+        dot_product = sum(a * b for a, b in zip(self.last_arcball, current_arcball, strict=False))
 
         # Handle case where vectors are opposite (180-degree rotation)
         if dot_product < -0.999999:
@@ -186,12 +173,9 @@ class ArcballCamera:
         else:
             # Regular arcball rotation with acceleration
             cross_product = [
-                self.last_arcball[1] * current_arcball[2]
-                - self.last_arcball[2] * current_arcball[1],
-                self.last_arcball[2] * current_arcball[0]
-                - self.last_arcball[0] * current_arcball[2],
-                self.last_arcball[0] * current_arcball[1]
-                - self.last_arcball[1] * current_arcball[0],
+                self.last_arcball[1] * current_arcball[2] - self.last_arcball[2] * current_arcball[1],
+                self.last_arcball[2] * current_arcball[0] - self.last_arcball[0] * current_arcball[2],
+                self.last_arcball[0] * current_arcball[1] - self.last_arcball[1] * current_arcball[0],
             ]
 
             rotation_quat = [
@@ -200,19 +184,10 @@ class ArcballCamera:
                 cross_product[1],
                 cross_product[2],
             ]
-
-            # Apply acceleration to rotation
-            rotation_quat = [
-                rotation_quat[0],
-                rotation_quat[1] * acceleration,
-                rotation_quat[2] * acceleration,
-                rotation_quat[3] * acceleration,
-            ]
-
             rotation_quat = self.quat_normalize(rotation_quat)
 
         # Apply rotation
-        self.quaternion = self.quat_multiply(self.start_quaternion, rotation_quat)
+        self.quaternion = self.quat_multiply(rotation_quat, self.quaternion)
         self.quaternion = self.quat_normalize(self.quaternion)
 
         self.last_arcball = current_arcball
@@ -239,12 +214,8 @@ class ArcballCamera:
         current_view = self.get_view_matrix()
 
         # Extract right and up vectors from view matrix
-        right = Vec3(
-            current_view[0][0], current_view[1][0], current_view[2][0]
-        ).normalize()
-        up = Vec3(
-            current_view[0][1], current_view[1][1], current_view[2][1]
-        ).normalize()
+        right = Vec3(current_view[0][0], current_view[1][0], current_view[2][0]).normalize()
+        up = Vec3(current_view[0][1], current_view[1][1], current_view[2][1]).normalize()
 
         # Scale pan by distance and field of view with improved sensitivity
         fov_scale = math.tan(math.radians(22.5))  # Half of 45-degree FOV
@@ -264,9 +235,7 @@ class ArcballCamera:
         """Zoom in/out based on mouse wheel with improved responsiveness."""
         # More responsive zoom with exponential scaling
         zoom_factor = math.exp(-delta * self.zoom_sensitivity * 0.001)
-        self.distance = max(
-            self.min_distance, min(self.max_distance, self.distance * zoom_factor)
-        )
+        self.distance = max(self.min_distance, min(self.max_distance, self.distance * zoom_factor))
 
         # Maintain direction from target to eye
         direction = (self.eye - self.target).normalize()
@@ -278,9 +247,7 @@ class ArcballCamera:
         relative_eye = self.eye - self.target
 
         # Rotate the relative position by the quaternion
-        rotated_relative = self.rotate_vector_by_quaternion(
-            relative_eye, self.quaternion
-        )
+        rotated_relative = self.rotate_vector_by_quaternion(relative_eye, self.quaternion)
 
         # Calculate new eye position
         rotated_eye = self.target + rotated_relative
@@ -328,9 +295,7 @@ class MainWindow(QOpenGLWindow):
         self.view = self.camera.get_view_matrix()
 
         # Load shaders and create geometry
-        ShaderLib.load_shader(
-            PBR_SHADER, "shaders/PBRVertex.glsl", "shaders/PBRFragment.glsl"
-        )
+        ShaderLib.load_shader(PBR_SHADER, "shaders/PBRVertex.glsl", "shaders/PBRFragment.glsl")
         ShaderLib.use(PBR_SHADER)
 
         eye = self.camera.eye
@@ -370,13 +335,11 @@ class MainWindow(QOpenGLWindow):
         # Create identity model matrix since we're using camera rotation now
         model = Mat4.identity()
 
-        transform_dtype = np.dtype(
-            [
-                ("MVP", np.float32, (16)),
-                ("normal_matrix", np.float32, (16)),
-                ("M", np.float32, (16)),
-            ]
-        )
+        transform_dtype = np.dtype([
+            ("MVP", np.float32, (16)),
+            ("normal_matrix", np.float32, (16)),
+            ("M", np.float32, (16)),
+        ])
 
         t = np.zeros(1, dtype=transform_dtype)
 

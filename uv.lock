@@ -780,7 +780,7 @@ wheels = [
 [[package]]
 name = "ncca-ngl"
 version = "0.2.3"
-source = { editable = "../../../../Users/jmacey/teaching/Code/PyNGL" }
+source = { editable = "../PyNGL" }
 dependencies = [
     { name = "freetype-py" },
     { name = "glfw" },
@@ -1098,7 +1098,7 @@ requires-dist = [
     { name = "freetype-py", specifier = ">=2.5.1" },
     { name = "marimo", specifier = ">=0.17.2" },
     { name = "matplotlib", specifier = ">=3.10.7" },
-    { name = "ncca-ngl", editable = "../../../../Users/jmacey/teaching/Code/PyNGL" },
+    { name = "ncca-ngl", editable = "../PyNGL" },
     { name = "numpy", specifier = ">=2.3.3" },
     { name = "pysdl3", specifier = ">=0.9.8b9" },
     { name = "pyside6", specifier = ">=6.9.2" },
