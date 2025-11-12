@@ -37,7 +37,7 @@ class ArcballCamera:
 
     def __init__(self):
         # Camera position and target
-        self.eye = Vec3(0.0, 2.0, 4.0)
+        self.eye = Vec3(0.0, 1.0, 4.0)
         self.target = Vec3(0.0, 0.0, 0.0)
         self.up = Vec3(0.0, 1.0, 0.0)
 
@@ -55,8 +55,8 @@ class ArcballCamera:
         self.last_mouse_pos = [0, 0]
 
         # IMPROVED SENSITIVITY - Much more responsive!
-        self.rotate_sensitivity = 2.0  # Increased from 0.005
-        self.pan_sensitivity = 2.5  # Increased from 0.001
+        self.rotate_sensitivity = 1.0  # Increased from 0.005
+        self.pan_sensitivity = 0.01  # Increased from 0.001
         self.zoom_sensitivity = 0.15  # Slightly increased
 
         # Track mouse speed for acceleration
@@ -151,20 +151,11 @@ class ArcballCamera:
         """Start rotation operation."""
         self.is_rotating = True
         self.last_arcball = self.screen_to_arcball(x, y, width, height)
-        self.start_quaternion = self.quaternion[:]
 
     def update_rotation(self, x, y, width, height):
         """Update rotation with improved sensitivity and acceleration."""
         if not self.is_rotating:
             return
-
-        # Get mouse movement delta for acceleration
-        dx = x - self.last_mouse_pos[0] if hasattr(self, "last_mouse_pos") else 0
-        dy = y - self.last_mouse_pos[1] if hasattr(self, "last_mouse_pos") else 0
-
-        # Calculate mouse velocity for acceleration
-        mouse_speed = math.sqrt(dx * dx + dy * dy)
-        acceleration = min(mouse_speed / 10.0, 3.0)  # Cap acceleration at 3x
 
         current_arcball = self.screen_to_arcball(x, y, width, height)
 
@@ -200,19 +191,10 @@ class ArcballCamera:
                 cross_product[1],
                 cross_product[2],
             ]
-
-            # Apply acceleration to rotation
-            rotation_quat = [
-                rotation_quat[0],
-                rotation_quat[1] * acceleration,
-                rotation_quat[2] * acceleration,
-                rotation_quat[3] * acceleration,
-            ]
-
             rotation_quat = self.quat_normalize(rotation_quat)
 
         # Apply rotation
-        self.quaternion = self.quat_multiply(self.start_quaternion, rotation_quat)
+        self.quaternion = self.quat_multiply(rotation_quat, self.quaternion)
         self.quaternion = self.quat_normalize(self.quaternion)
 
         self.last_arcball = current_arcball
