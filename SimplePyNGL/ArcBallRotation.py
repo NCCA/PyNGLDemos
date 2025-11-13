@@ -37,7 +37,7 @@ class ArcballCamera:
 
     def __init__(self):
         # Camera position and target
-        self.eye = Vec3(0.0, 2.0, 4.0)
+        self.eye = Vec3(0.0, 1.0, 4.0)
         self.target = Vec3(0.0, 0.0, 0.0)
         self.up = Vec3(0.0, 1.0, 0.0)
 
