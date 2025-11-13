@@ -251,7 +251,7 @@ class WebGPUScene(NumpyBufferWidget):
 
         # Update projection matrix
         self.project = perspective(
-            45.0, width / height if height > 0 else 1, 0.1, 100.0, PerspMode.WebGPU
+            45.0, width / height if height > 0 else 1, 0.1, 350.0, PerspMode.WebGPU
         )
 
         # Recreate render buffers for the new window size
