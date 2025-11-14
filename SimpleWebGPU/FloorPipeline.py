@@ -4,7 +4,7 @@ from ncca.ngl import Mat4, PrimData, Prims, Transform, Vec3
 
 
 class FloorPipeline:
-    def __init__(self, device, eye, light_pos, view, project):
+    def __init__(self, device, eye, light_pos, view, project, width, height):
         self.device = device
         self.pipeline = None
         self.transform_buffer = None
@@ -27,6 +27,8 @@ class FloorPipeline:
         self.vertex_buffer = self.device.create_buffer_with_data(
             data=grid, usage=wgpu.BufferUsage.VERTEX
         )
+        self.buffer_width = width
+        self.buffer_height = height
 
     def _create_render_pipeline(self):
         """
@@ -67,7 +69,7 @@ class FloorPipeline:
                 "depth_compare": wgpu.CompareFunction.less,
             },
             multisample={
-                "count": 1,
+                "count": 4,
                 "mask": 0xFFFFFFFF,
                 "alpha_to_coverage_enabled": False,
             },
@@ -185,7 +187,7 @@ class FloorPipeline:
             data=self.transform_uniforms.tobytes(),
         )
 
-    def paint(self, texture_view, depth_buffer_view) -> None:
+    def paint(self, texture_view, multi_sample_view, depth_buffer_view) -> None:
         """
         Paint the WebGPU content.
 
@@ -197,11 +199,11 @@ class FloorPipeline:
             render_pass = command_encoder.begin_render_pass(
                 color_attachments=[
                     {
-                        "view": texture_view,
-                        "resolve_target": None,
+                        "view": multi_sample_view,
+                        "resolve_target": texture_view,
                         "load_op": wgpu.LoadOp.load,
                         "store_op": wgpu.StoreOp.store,
-                        "clear_value": (0.3, 0.3, 0.3, 1.0),
+                        "clear_value": (0.4, 0.4, 0.4, 1.0),
                     }
                 ],
                 depth_stencil_attachment={
@@ -211,7 +213,7 @@ class FloorPipeline:
                     "depth_clear_value": 1.0,
                 },
             )
-            render_pass.set_viewport(0, 0, 1024, 1024, 0, 1)
+            render_pass.set_viewport(0, 0, self.buffer_width, self.buffer_height, 0, 1)
             render_pass.set_pipeline(self.pipeline)
             render_pass.set_bind_group(0, self.bind_group_0, [], 0, 999999)
             render_pass.set_bind_group(1, self.bind_group_1, [], 0, 999999)

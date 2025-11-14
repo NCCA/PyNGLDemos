@@ -1,3 +1,8 @@
+# TODO
+
+update all WebGPU demos to new structure.
+Create templates for basic WebGPU and OpenGL demos (via button on RunDemos)
+
 
 Transforms (with PySide GUI)
 Camera 

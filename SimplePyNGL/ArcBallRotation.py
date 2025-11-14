@@ -46,6 +46,7 @@ class ArcballCamera:
         self.min_distance = 0.1
         self.max_distance = 100.0
 
+
         # Rotation as quaternion for smooth, gimbal-lock-free rotation
         self.quaternion = [1.0, 0.0, 0.0, 0.0]  # [w, x, y, z]
 
