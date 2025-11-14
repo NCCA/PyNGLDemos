@@ -5,14 +5,14 @@ import numpy as np
 import wgpu
 from FloorPipeline import FloorPipeline
 from ncca.ngl import Mat3, Mat4, PerspMode, PrimData, Prims, Vec3, look_at, perspective
-from NumpyBufferWidget import NumpyBufferWidget
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QApplication
 from TeapotPipeline import TeapotPipeline
+from WebGPUWidget import WebGPUWidget
 from wgpu.utils import get_default_device
 
 
-class WebGPUScene(NumpyBufferWidget):
+class WebGPUScene(WebGPUWidget):
     """
     A concrete implementation of NumpyBufferWidget for a WebGPU scene.
 
@@ -50,7 +50,6 @@ class WebGPUScene(NumpyBufferWidget):
 
         self.pipelines = []
         self.vertex_buffer = None
-        self.ratio = self.devicePixelRatio()
         self.msaa_sample_count = 4
 
         self.texture_size = (1024, 1024)
@@ -183,49 +182,6 @@ class WebGPUScene(NumpyBufferWidget):
         for pipeline in self.pipelines:
             pipeline.update_uniform_buffers(self.mouse_global_tx)
 
-    def _update_colour_buffer(self, texture) -> None:
-        """
-        Update the color buffer with the rendered texture data.
-        """
-        buffer_size = (
-            self.width() * self.height() * 4
-        )  # Width * Height * Bytes per pixel (RGBA8 is 4 bytes per pixel)
-        try:
-            readback_buffer = self.device.create_buffer(
-                size=buffer_size,
-                usage=wgpu.BufferUsage.COPY_DST | wgpu.BufferUsage.MAP_READ,
-            )
-            command_encoder = self.device.create_command_encoder()
-            command_encoder.copy_texture_to_buffer(
-                {"texture": texture},
-                {
-                    "buffer": readback_buffer,
-                    "bytes_per_row": self.width()
-                    * 4,  # Row stride (width * bytes per pixel)
-                    "rows_per_image": self.height(),  # Number of rows in the texture
-                },
-                (self.width(), self.height(), 1),  # Copy size: width, height, depth
-            )
-            self.device.queue.submit([command_encoder.finish()])
-
-            # Map the buffer for reading
-            readback_buffer.map_sync(mode=wgpu.MapMode.READ)
-
-            # Access the mapped memory
-            raw_data = readback_buffer.read_mapped()
-            self.frame_buffer = np.frombuffer(raw_data, dtype=np.uint8).reshape(
-                (
-                    self.width(),
-                    self.height(),
-                    4,
-                )
-            )  # Height, Width, Channels
-
-            # Unmap the buffer when done
-            readback_buffer.unmap()
-        except Exception as e:
-            print(f"Failed to update color buffer: {e}")
-
     def initialize_buffer(self) -> None:
         """
         Initialize the numpy buffer for rendering .
@@ -234,7 +190,7 @@ class WebGPUScene(NumpyBufferWidget):
         print("initialize numpy buffer")
         self.frame_buffer = np.zeros([self.height(), self.width(), 4], dtype=np.uint8)
 
-    def resizeEvent(self, event) -> None:
+    def resizeWebGPU(self, width, height) -> None:
         """
         Called whenever the window is resized.
         It's crucial to update the viewport and projection matrix here.
@@ -243,12 +199,6 @@ class WebGPUScene(NumpyBufferWidget):
             event: The resize event object.
         """
         # Update the stored width and height, considering high-DPI displays
-        width = int(event.size().width() * self.ratio)
-        height = int(event.size().height() * self.ratio)
-
-        # Update texture size to match window dimensions
-        self.texture_size = (width, height)
-
         # Update projection matrix
         self.project = perspective(
             45.0, width / height if height > 0 else 1, 0.1, 350.0, PerspMode.WebGPU
@@ -261,83 +211,10 @@ class WebGPUScene(NumpyBufferWidget):
         if self.frame_buffer is not None:
             self.frame_buffer = np.zeros([height, width, 4], dtype=np.uint8)
         for pipeline in self.pipelines:
-            pipeline.buffer_width = width
-            pipeline.buffer_height = height
+            pipeline.width = width
+            pipeline.height = height
 
         self.update()
-
-    def _calculate_aligned_row_size(self) -> int:
-        """
-        Calculate the aligned row size for texture copy operations.
-        Many GPUs require row alignment to 256 or 512 bytes.
-        """
-        bytes_per_pixel = 4  # RGBA8 = 4 bytes per pixel
-        raw_row_size = self.texture_size[0] * bytes_per_pixel
-
-        # Align to 256 bytes (common GPU requirement)
-        alignment = 256
-        aligned_row_size = ((raw_row_size + alignment - 1) // alignment) * alignment
-
-        return aligned_row_size
-
-    def _calculate_aligned_buffer_size(self) -> int:
-        """
-        Calculate the aligned buffer size needed for texture copy operations.
-        Many GPUs require row alignment to 256 or 512 bytes.
-        """
-        aligned_row_size = self._calculate_aligned_row_size()
-        return aligned_row_size * self.texture_size[1]
-
-    def _update_colour_buffer(self) -> None:
-        """
-        Update the colour buffer with the rendered texture data.
-        """
-        # Use the aligned row size calculation
-        bytes_per_row = self._calculate_aligned_row_size()
-
-        try:
-            command_encoder = self.device.create_command_encoder()
-            command_encoder.copy_texture_to_buffer(
-                {"texture": self.colour_buffer_texture},
-                {
-                    "buffer": self.readback_buffer,
-                    "bytes_per_row": bytes_per_row,  # Aligned row stride
-                    "rows_per_image": self.texture_size[
-                        1
-                    ],  # Number of rows in the texture
-                },
-                (
-                    self.texture_size[0],
-                    self.texture_size[1],
-                    1,
-                ),  # Copy size: width, height, depth
-            )
-            self.device.queue.submit([command_encoder.finish()])
-
-            # Map the buffer for reading
-            self.readback_buffer.map_sync(mode=wgpu.MapMode.READ)
-
-            # Access the mapped memory
-            raw_data = self.readback_buffer.read_mapped()
-            width, height = self.texture_size
-
-            # Create a strided view of the raw data and then copy it to a contiguous array.
-            # This is necessary because the raw data from the buffer includes padding bytes
-            # to meet row alignment requirements, so we can't just reshape it.
-            strided_view = np.lib.stride_tricks.as_strided(
-                np.frombuffer(raw_data, dtype=np.uint8),
-                shape=(height, width, 4),
-                strides=(bytes_per_row, 4, 1),
-            )
-            self.frame_buffer = np.copy(strided_view)
-
-            # Unmap the buffer when done
-            self.readback_buffer.unmap()
-        except Exception as e:
-            print(f"Failed to update colour buffer: {e}")
-            # Fallback: create a simple gray buffer if texture copy fails
-            if self.frame_buffer is not None:
-                self.frame_buffer.fill(128)
 
     def keyPressEvent(self, event) -> None:
         """

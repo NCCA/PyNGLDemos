@@ -27,8 +27,8 @@ class FloorPipeline:
         self.vertex_buffer = self.device.create_buffer_with_data(
             data=grid, usage=wgpu.BufferUsage.VERTEX
         )
-        self.buffer_width = width
-        self.buffer_height = height
+        self.width = width
+        self.height = height
 
     def _create_render_pipeline(self):
         """
@@ -213,7 +213,7 @@ class FloorPipeline:
                     "depth_clear_value": 1.0,
                 },
             )
-            render_pass.set_viewport(0, 0, self.buffer_width, self.buffer_height, 0, 1)
+            render_pass.set_viewport(0, 0, self.width, self.height, 0, 1)
             render_pass.set_pipeline(self.pipeline)
             render_pass.set_bind_group(0, self.bind_group_0, [], 0, 999999)
             render_pass.set_bind_group(1, self.bind_group_1, [], 0, 999999)
