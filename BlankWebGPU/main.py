@@ -20,6 +20,7 @@ class WebGPUScene(WebGPUWidget):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("BlankWebGPU")
+        self.pipeline = None
         self.msaa_sample_count = 4
         self._initialize_web_gpu()
         self.update()
@@ -34,8 +35,50 @@ class WebGPUScene(WebGPUWidget):
         try:
             self.device = get_default_device()
             self._create_render_buffer()
+            self._create_render_pipeline()
         except Exception as e:
             print(f"Failed to initialize WebGPU: {e}")
+
+    def _create_render_pipeline(self) -> None:
+        """
+        Create a render pipeline.
+        """
+        shader_code = """
+@vertex
+fn vertex_main(@builtin(vertex_index) in_vertex_index: u32) -> @builtin(position) vec4<f32> {
+    var positions = array<vec2<f32>, 3>(
+        vec2<f32>(0.0, 0.5),
+        vec2<f32>(-0.5, -0.5),
+        vec2<f32>(0.5, -0.5)
+    );
+    return vec4<f32>(positions[in_vertex_index], 0.0, 1.0);
+}
+
+@fragment
+fn fragment_main() -> @location(0) vec4<f32> {
+    return vec4<f32>(1.0, 0.0, 0.0, 1.0); // Red color
+}
+"""
+        shader_module = self.device.create_shader_module(code=shader_code)
+
+        self.pipeline = self.device.create_render_pipeline(
+            label="template_pipeline",
+            layout="auto",
+            vertex={
+                "module": shader_module,
+                "entry_point": "vertex_main",
+                "buffers": [],
+            },
+            fragment={
+                "module": shader_module,
+                "entry_point": "fragment_main",
+                "targets": [{"format": wgpu.TextureFormat.rgba8unorm}],
+            },
+            primitive={"topology": wgpu.PrimitiveTopology.triangle_list},
+            multisample={
+                "count": self.msaa_sample_count,
+            },
+        )
 
     def resizeWebGPU(self, width, height) -> None:
         """
@@ -69,6 +112,9 @@ class WebGPUScene(WebGPUWidget):
                     }
                 ]
             )
+            if self.pipeline:
+                render_pass.set_pipeline(self.pipeline)
+                render_pass.draw(3, 1, 0, 0)  # Draw 3 vertices, 1 instance
             render_pass.end()
             self.device.queue.submit([command_encoder.finish()])
             self._update_colour_buffer()
