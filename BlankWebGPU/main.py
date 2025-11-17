@@ -1,12 +1,14 @@
 #!/usr/bin/env -S uv run --active --script
 import sys
 
+import numpy as np
 import wgpu
 import wgpu.utils
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QApplication
-from WebGPUWidget import WebGPUWidget
 from wgpu.utils import get_default_device
+
+from WebGPUWidget import WebGPUWidget
 
 
 class WebGPUScene(WebGPUWidget):
@@ -41,33 +43,40 @@ class WebGPUScene(WebGPUWidget):
 
     def _create_render_pipeline(self) -> None:
         """
-        Create a render pipeline.
+        Create a render pipeline. First load the shader
         """
-        shader_code = """
-@vertex
-fn vertex_main(@builtin(vertex_index) in_vertex_index: u32) -> @builtin(position) vec4<f32> {
-    var positions = array<vec2<f32>, 3>(
-        vec2<f32>(0.0, 0.5),
-        vec2<f32>(-0.5, -0.5),
-        vec2<f32>(0.5, -0.5)
-    );
-    return vec4<f32>(positions[in_vertex_index], 0.0, 1.0);
-}
-
-@fragment
-fn fragment_main() -> @location(0) vec4<f32> {
-    return vec4<f32>(1.0, 0.0, 0.0, 1.0); // Red color
-}
-"""
+        with open("Shader.wgsl", "r") as shader:
+            shader_code = shader.read()
         shader_module = self.device.create_shader_module(code=shader_code)
 
+        ## create a triangle buffer to render not it needs to be float32
+        vertices = np.array([-0.5, -0.5, 0.0, 0.0, 0.5, 0.0, 0.5, -0.5, 0.0], dtype=np.float32)
+        self.vertex_buffer = self.device.create_buffer(
+            size=vertices.nbytes,
+            usage=wgpu.BufferUsage.VERTEX | wgpu.BufferUsage.COPY_DST,
+        )
+        self.device.queue.write_buffer(self.vertex_buffer, 0, vertices.tobytes())
+
+        # Create a pipeline layout (no bind groups needed for this simple example)
+        pipeline_layout = self.device.create_pipeline_layout(bind_group_layouts=[])
+        print(vertices.itemsize)
         self.pipeline = self.device.create_render_pipeline(
             label="template_pipeline",
-            layout="auto",
+            layout=pipeline_layout,
             vertex={
                 "module": shader_module,
                 "entry_point": "vertex_main",
-                "buffers": [],
+                "buffers": [
+                    {
+                        # Define the structure of our vertex buffer
+                        "array_stride": 3 * vertices.itemsize,  # 3 floats x 4 bytes
+                        "step_mode": "vertex",
+                        "attributes": [
+                            # Attribute 0: Position (vec3<f32>)
+                            {"format": "float32x3", "offset": 0, "shader_location": 0},
+                        ],
+                    }
+                ],
             },
             fragment={
                 "module": shader_module,
@@ -112,9 +121,9 @@ fn fragment_main() -> @location(0) vec4<f32> {
                     }
                 ]
             )
-            if self.pipeline:
-                render_pass.set_pipeline(self.pipeline)
-                render_pass.draw(3, 1, 0, 0)  # Draw 3 vertices, 1 instance
+            render_pass.set_vertex_buffer(0, self.vertex_buffer)
+            render_pass.set_pipeline(self.pipeline)
+            render_pass.draw(3)  # Draw 3 vertices
             render_pass.end()
             self.device.queue.submit([command_encoder.finish()])
             self._update_colour_buffer()

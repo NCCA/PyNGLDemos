@@ -26,9 +26,9 @@ dependencies = [
 members=["*"]
 exclude=["*"]
 [tool.uv.sources]
-ncca-ngl = [
-{ path = "/home/jmacey/Code/PyNGL/", editable=true}
-]
+# ncca-ngl = [
+# { path = "/home/jmacey/Code/PyNGL/", editable=true}
+# ]
 
 [dependency-groups]
 dev = [
