@@ -171,13 +171,7 @@ class WebGPUWidget(QWidget, metaclass=QWidgetABCMeta):
         )
 
     def render_text(
-        self,
-        x: int,
-        y: int,
-        text: str,
-        size: int = 10,
-        font: str = "Arial",
-        colour: QColor = Qt.black,
+        self, x: int, y: int, text: str, size: int = 10, font: str = "Arial", colour: QColor = Qt.black
     ) -> None:
         """
         Add text to the buffer to be rendered on the canvas.
