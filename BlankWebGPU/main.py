@@ -102,7 +102,7 @@ class WebGPUScene(WebGPUWidget):
 
         self.update()
 
-    def paint(self) -> None:
+    def paintWebGPU(self) -> None:
         """
         Paint the WebGPU content.
 

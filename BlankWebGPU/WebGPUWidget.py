@@ -34,17 +34,14 @@ class WebGPUWidget(QWidget, metaclass=QWidgetABCMeta):
         This constructor initializes the QWidget and sets the initialized flag to False.
         """
         super().__init__()
-        self.initialized = False
-
         self.text_buffer: List[Tuple[int, int, str, int, str, QColor]] = []
         self.frame_buffer = None
         self._update_timer = QTimer(self)
         self._update_timer.timeout.connect(self.update)
+        # get the device pixel ratio for mac displays.
         self.ratio = self.devicePixelRatio()
-        self.texture_size = (
-            int(self.width() * self.ratio),
-            int(self.height() * self.ratio),
-        )
+        # create the numpy buffer for the final framebuffer render
+        self._initialize_buffer()
 
     def start_update_timer(self, interval_ms: int) -> None:
         """
@@ -90,7 +87,7 @@ class WebGPUWidget(QWidget, metaclass=QWidgetABCMeta):
         return super().resizeEvent(event)
 
     @abstractmethod
-    def paint(self) -> None:
+    def paintWebGPU(self) -> None:
         """
         Paint the WebGPU content.
 
@@ -106,10 +103,7 @@ class WebGPUWidget(QWidget, metaclass=QWidgetABCMeta):
         Args:
             event (QPaintEvent): The paint event.
         """
-        if not self.initialized:
-            self._initialize_buffer()
-            self.initialized = True
-        self.paint()
+        self.paintWebGPU()
         painter = QPainter(self)
 
         if self.frame_buffer is not None:
@@ -138,6 +132,7 @@ class WebGPUWidget(QWidget, metaclass=QWidgetABCMeta):
         width = int(self.width() * self.ratio)
         height = int(self.height() * self.ratio)
         self.frame_buffer = np.zeros([height, width, 4], dtype=np.uint8)
+        self.texture_size = (width, height)
 
     def _create_render_buffer(self):
         # This is the texture that the multisampled texture will be resolved to
@@ -235,9 +230,7 @@ class WebGPUWidget(QWidget, metaclass=QWidgetABCMeta):
                 {
                     "buffer": self.readback_buffer,
                     "bytes_per_row": bytes_per_row,  # Aligned row stride
-                    "rows_per_image": self.texture_size[
-                        1
-                    ],  # Number of rows in the texture
+                    "rows_per_image": self.texture_size[1],  # Number of rows in the texture
                 },
                 (
                     self.texture_size[0],
