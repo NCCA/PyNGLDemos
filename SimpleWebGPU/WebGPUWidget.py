@@ -34,17 +34,15 @@ class WebGPUWidget(QWidget, metaclass=QWidgetABCMeta):
         This constructor initializes the QWidget and sets the initialized flag to False.
         """
         super().__init__()
-        self.initialized = False
-
+        self.msaa_sample_count = 4
         self.text_buffer: List[Tuple[int, int, str, int, str, QColor]] = []
         self.frame_buffer = None
         self._update_timer = QTimer(self)
         self._update_timer.timeout.connect(self.update)
+        # get the device pixel ratio for mac displays.
         self.ratio = self.devicePixelRatio()
-        self.texture_size = (
-            int(self.width() * self.ratio),
-            int(self.height() * self.ratio),
-        )
+        # create the numpy buffer for the final framebuffer render
+        self._initialize_buffer()
 
     def start_update_timer(self, interval_ms: int) -> None:
         """
@@ -58,15 +56,6 @@ class WebGPUWidget(QWidget, metaclass=QWidgetABCMeta):
     def stop_update_timer(self) -> None:
         """Stops the update timer."""
         self._update_timer.stop()
-
-    @abstractmethod
-    def initialize_buffer(self) -> None:
-        """
-        Initialize the WebGPU context.
-
-        This method must be implemented in subclasses to set up the WebGPU context. Will be called once.
-        """
-        pass
 
     @abstractmethod
     def resizeWebGPU(self, w, h) -> None:
@@ -99,7 +88,7 @@ class WebGPUWidget(QWidget, metaclass=QWidgetABCMeta):
         return super().resizeEvent(event)
 
     @abstractmethod
-    def paint(self) -> None:
+    def paintWebGPU(self) -> None:
         """
         Paint the WebGPU content.
 
@@ -115,10 +104,7 @@ class WebGPUWidget(QWidget, metaclass=QWidgetABCMeta):
         Args:
             event (QPaintEvent): The paint event.
         """
-        if not self.initialized:
-            self.initialize_buffer()
-            self.initialized = True
-        self.paint()
+        self.paintWebGPU()
         painter = QPainter(self)
 
         if self.frame_buffer is not None:
@@ -138,6 +124,52 @@ class WebGPUWidget(QWidget, metaclass=QWidgetABCMeta):
         self.text_buffer.clear()
 
         return super().paintEvent(event)
+
+    def _initialize_buffer(self) -> None:
+        """
+        Initialize the numpy buffer for rendering .
+
+        """
+        width = int(self.width() * self.ratio)
+        height = int(self.height() * self.ratio)
+        self.frame_buffer = np.zeros([height, width, 4], dtype=np.uint8)
+        self.texture_size = (width, height)
+
+    def _create_render_buffer(self):
+        # This is the texture that the multisampled texture will be resolved to
+        colour_buffer_texture = self.device.create_texture(
+            size=self.texture_size,
+            sample_count=1,
+            format=wgpu.TextureFormat.rgba8unorm,
+            usage=wgpu.TextureUsage.RENDER_ATTACHMENT | wgpu.TextureUsage.COPY_SRC,
+        )
+        self.colour_buffer_texture = colour_buffer_texture
+        self.colour_buffer_texture_view = self.colour_buffer_texture.create_view()
+
+        # This is the multisampled texture that will be rendered to
+        self.multisample_texture = self.device.create_texture(
+            size=self.texture_size,
+            sample_count=self.msaa_sample_count,
+            format=wgpu.TextureFormat.rgba8unorm,
+            usage=wgpu.TextureUsage.RENDER_ATTACHMENT,
+        )
+        self.multisample_texture_view = self.multisample_texture.create_view()
+
+        # Now create a depth buffer
+        depth_texture = self.device.create_texture(
+            size=self.texture_size,
+            format=wgpu.TextureFormat.depth24plus,
+            usage=wgpu.TextureUsage.RENDER_ATTACHMENT,
+            sample_count=self.msaa_sample_count,
+        )
+        self.depth_buffer_view = depth_texture.create_view()
+
+        # Calculate aligned buffer size for texture copy
+        buffer_size = self._calculate_aligned_buffer_size()
+        self.readback_buffer = self.device.create_buffer(
+            size=buffer_size,
+            usage=wgpu.BufferUsage.COPY_DST | wgpu.BufferUsage.MAP_READ,
+        )
 
     def render_text(
         self,
