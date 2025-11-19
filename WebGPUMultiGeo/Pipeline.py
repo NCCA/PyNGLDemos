@@ -176,7 +176,7 @@ class Pipeline:
                 "depth_compare": wgpu.CompareFunction.less,
             },
             multisample={
-                "count": 1,
+                "count": 4,
                 "mask": 0xFFFFFFFF,
                 "alpha_to_coverage_enabled": False,
             },
@@ -201,13 +201,15 @@ class Pipeline:
             data=self.vertex_uniform_data.tobytes(),
         )
 
-    def begin_render_pass(self, texture_view, depth_buffer_view):
+    def begin_render_pass(
+        self, size, texture_view, multisample_texture_view, depth_buffer_view
+    ):
         self.command_encoder = self.device.create_command_encoder()
         self.render_pass = self.command_encoder.begin_render_pass(
             color_attachments=[
                 {
-                    "view": texture_view,
-                    "resolve_target": None,
+                    "view": multisample_texture_view,
+                    "resolve_target": texture_view,
                     "load_op": wgpu.LoadOp.clear,
                     "store_op": wgpu.StoreOp.store,
                     "clear_value": (0.3, 0.3, 0.3, 1.0),
@@ -220,7 +222,7 @@ class Pipeline:
                 "depth_clear_value": 1.0,
             },
         )
-        self.render_pass.set_viewport(0, 0, 1024, 1024, 0, 1)
+        self.render_pass.set_viewport(0, 0, size[0], size[1], 0, 1)
         self.render_pass.set_pipeline(self.pipeline)
 
     def render_mesh(self, mesh: str, transform, colour, index) -> None:

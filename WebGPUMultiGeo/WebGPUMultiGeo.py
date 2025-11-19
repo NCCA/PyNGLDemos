@@ -4,14 +4,14 @@ import sys
 import numpy as np
 import wgpu
 from ncca.ngl import Mat4, PrimData, Prims, Transform, Vec3, Vec4, look_at, perspective
-from NumpyBufferWidget import NumpyBufferWidget
 from Pipeline import Pipeline
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QApplication
+from WebGPUWidget import WebGPUWidget
 from wgpu.utils import get_default_device
 
 
-class WebGPUScene(NumpyBufferWidget):
+class WebGPUScene(WebGPUWidget):
     """
     A concrete implementation of NumpyBufferWidget for a WebGPU scene.
 
@@ -49,9 +49,6 @@ class WebGPUScene(NumpyBufferWidget):
 
         self.pipelines = []
         self.vertex_buffer = None
-        self.width = 1024
-        self.height = 1024
-        self.texture_size = (1024, 1024)
         self.rotation = 0.0
         self.eye = Vec3(0.0, 2.0, 4.0)
         self.view = look_at(self.eye, Vec3(0, 0, 0), Vec3(0, 1, 0))
@@ -66,7 +63,7 @@ class WebGPUScene(NumpyBufferWidget):
         )
 
         self.project = gl_to_web @ perspective(
-            45.0, self.width / self.height, 0.1, 100.0
+            45.0, self.width() / self.height(), 0.1, 100.0
         )
         self._initialize_web_gpu()
         self.update()
@@ -88,22 +85,6 @@ class WebGPUScene(NumpyBufferWidget):
             print(f"Failed to initialize WebGPU: {e}")
             exit(1)
 
-    def _create_render_buffer(self):
-        colour_buffer_texture = self.device.create_texture(
-            size=(self.width, self.height),
-            format=wgpu.TextureFormat.rgba8unorm,
-            usage=wgpu.TextureUsage.RENDER_ATTACHMENT | wgpu.TextureUsage.COPY_SRC,
-        )
-        self.colour_buffer_texture = colour_buffer_texture
-        self.texture_view = self.colour_buffer_texture.create_view()
-        # Now create a depth buffer
-        depth_texture = self.device.create_texture(
-            size=(self.width, self.height),  # width, height, depth
-            format=wgpu.TextureFormat.depth24plus,
-            usage=wgpu.TextureUsage.RENDER_ATTACHMENT,
-        )
-        self.depth_buffer_view = depth_texture.create_view()
-
     def _init_buffers(self):
         teapot = PrimData.primitive(Prims.TEAPOT.value)
         self.teapot_size = teapot.size // 8
@@ -119,7 +100,7 @@ class WebGPUScene(NumpyBufferWidget):
             self.device, self.eye, self.light_pos, self.view, self.project
         )
 
-    def paint(self) -> None:
+    def paintWebGPU(self) -> None:
         """
         Paint the WebGPU content.
 
@@ -127,7 +108,12 @@ class WebGPUScene(NumpyBufferWidget):
         """
         self.update_uniform_buffers()
 
-        self.pipeline.begin_render_pass(self.texture_view, self.depth_buffer_view)
+        self.pipeline.begin_render_pass(
+            self.texture_size,
+            self.colour_buffer_texture_view,
+            self.multisample_texture_view,
+            self.depth_buffer_view,
+        )
 
         tx = Transform()
         tx.set_scale(0.1, 0.1, 0.1)
@@ -140,7 +126,7 @@ class WebGPUScene(NumpyBufferWidget):
             Prims.TEAPOT, self.mouse_global_tx @ tx.get_matrix(), (0, 1, 0, 1), 1
         )
         self.pipeline.end_render_pass()
-        self._update_colour_buffer(self.colour_buffer_texture)
+        self._update_colour_buffer()
 
     def update_uniform_buffers(self) -> None:
         """
@@ -154,57 +140,6 @@ class WebGPUScene(NumpyBufferWidget):
         self.mouse_global_tx[3][0] = self.model_position.x
         self.mouse_global_tx[3][1] = self.model_position.y
         self.mouse_global_tx[3][2] = self.model_position.z
-
-    def _update_colour_buffer(self, texture) -> None:
-        """
-        Update the color buffer with the rendered texture data.
-        """
-        buffer_size = (
-            self.width * self.height * 4
-        )  # Width * Height * Bytes per pixel (RGBA8 is 4 bytes per pixel)
-        try:
-            readback_buffer = self.device.create_buffer(
-                size=buffer_size,
-                usage=wgpu.BufferUsage.COPY_DST | wgpu.BufferUsage.MAP_READ,
-            )
-            command_encoder = self.device.create_command_encoder()
-            command_encoder.copy_texture_to_buffer(
-                {"texture": texture},
-                {
-                    "buffer": readback_buffer,
-                    "bytes_per_row": self.width
-                    * 4,  # Row stride (width * bytes per pixel)
-                    "rows_per_image": self.height,  # Number of rows in the texture
-                },
-                (self.width, self.height, 1),  # Copy size: width, height, depth
-            )
-            self.device.queue.submit([command_encoder.finish()])
-
-            # Map the buffer for reading
-            readback_buffer.map_sync(mode=wgpu.MapMode.READ)
-
-            # Access the mapped memory
-            raw_data = readback_buffer.read_mapped()
-            self.buffer = np.frombuffer(raw_data, dtype=np.uint8).reshape(
-                (
-                    self.width,
-                    self.height,
-                    4,
-                )
-            )  # Height, Width, Channels
-
-            # Unmap the buffer when done
-            readback_buffer.unmap()
-        except Exception as e:
-            print(f"Failed to update color buffer: {e}")
-
-    def initialize_buffer(self) -> None:
-        """
-        Initialize the numpy buffer for rendering .
-
-        """
-        print("initialize numpy buffer")
-        self.buffer = np.zeros([self.height, self.width, 4], dtype=np.uint8)
 
     def keyPressEvent(self, event) -> None:
         """
@@ -311,7 +246,7 @@ def main():
     """
     app = QApplication(sys.argv)
     win = WebGPUScene()
-    win.resize(800, 600)
+    win.resize(1024, 720)
     win.show()
     sys.exit(app.exec())
 
